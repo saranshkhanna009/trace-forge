@@ -1,0 +1,8 @@
+maintenance_event_id,work_order_id,machine_id,ts_utc,component,action_type,failure_mode_code,measurement_name,measurement_before,measurement_after,measurement_unit,observation,status,evidence_ref
+ME-001,WO-20260318-441,CNC-VMC-07,2026-03-18T09:42:00Z,coolant_filter,measurement,coolant_starvation,coolant_flow_l_min,11.4,,L/min,Manual bucket test agreed with telemetry,observed,maintenance_evidence.md#me-001
+ME-002,WO-20260318-441,CNC-VMC-07,2026-03-18T09:50:00Z,coolant_filter,inspection,coolant_starvation,filter_differential_pressure_bar,1.8,,bar,Filter packed with aluminum chips,observed,maintenance_evidence.md#me-002
+ME-003,WO-20260318-441,CNC-VMC-07,2026-03-18T10:02:00Z,coolant_filter,replacement,coolant_starvation,,,,Filter element replaced and coolant line flushed,corrected,maintenance_evidence.md#me-003
+ME-004,WO-20260318-441,CNC-VMC-07,2026-03-18T10:08:00Z,coolant_pump,validation,coolant_starvation,coolant_flow_l_min,11.4,22.2,L/min,Flow restored after filter replacement,validated,maintenance_evidence.md#me-004
+ME-005,WO-20260318-441,CNC-VMC-07,2026-03-18T10:15:00Z,tool_T12,replacement,tool_wear,tool_runtime_min,327,0,min,Insert edge wear and minor chipping observed,replaced,maintenance_evidence.md#me-005
+ME-006,WO-20260318-441,CNC-VMC-07,2026-03-18T10:18:00Z,spindle,inspection,spindle_bearing_degradation,spindle_vibration_rms_mm_s,2.9,0.95,mm/s,No bearing damage or lubrication defect found,ruled_out,maintenance_evidence.md#me-006
+ME-007,WO-20260318-441,CNC-VMC-07,2026-03-18T10:25:00Z,tool_T12,validation,tool_wear,surface_finish_ra_um,3.2,1.4,um,Validation cut passed the surface-finish limit,validated,maintenance_evidence.md#me-007

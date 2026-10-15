@@ -1,0 +1,20 @@
+{
+  "schema_version": "traceforge.cnc.v1",
+  "machine_id": "CNC-VMC-07",
+  "asset_type": "cnc_vertical_machining_center",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 1,
+  "incident_ids": [
+    "INC-CNC-VMC-07-20260318-001"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

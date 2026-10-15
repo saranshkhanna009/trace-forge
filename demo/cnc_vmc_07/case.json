@@ -1,0 +1,20 @@
+{
+  "id": "INC-CNC-VMC-07-20260318-001",
+  "asset_id": "CNC-VMC-07",
+  "asset_type": "cnc_vertical_machining_center",
+  "domain": "cnc_manufacturing",
+  "description": "Coolant flow declined during an aluminum finishing operation, followed by spindle heating, chatter, and a failed surface-finish inspection.",
+  "observed_at": "2026-03-18T09:29:42Z",
+  "baseline_end_at": "2026-03-18T09:20:00Z",
+  "incident_start_at": "2026-03-18T09:29:42Z",
+  "incident_end_at": "2026-03-18T09:30:05Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

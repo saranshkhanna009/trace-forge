@@ -1,0 +1,5 @@
+prediction_id,model_id,model_version,predicted_at_utc,feature_window_start_utc,feature_window_end_utc,machine_id,cycle_id,target_name,score,decision_threshold,predicted_class,top_features_json,feature_schema_version
+PRED-0915,spindle_health_24h,1.4.2,2026-03-18T09:15:00Z,2026-03-18T09:00:00Z,2026-03-18T09:15:00Z,CNC-VMC-07,C20260318-0912-T12,spindle_overheat_or_chatter_24h,0.18,0.65,normal,"{""spindle_load_pct"":0.18}",features.v3
+PRED-0920,spindle_health_24h,1.4.2,2026-03-18T09:20:00Z,2026-03-18T09:05:00Z,2026-03-18T09:20:00Z,CNC-VMC-07,C20260318-0912-T12,spindle_overheat_or_chatter_24h,0.24,0.65,normal,"{""spindle_bearing_temp_c"":0.22}",features.v3
+PRED-0925,spindle_health_24h,1.4.2,2026-03-18T09:25:00Z,2026-03-18T09:10:00Z,2026-03-18T09:25:00Z,CNC-VMC-07,C20260318-0912-T12,spindle_overheat_or_chatter_24h,0.31,0.65,normal,"{""spindle_vibration_rms_mm_s"":0.18}",features.v3
+PRED-0930,spindle_health_24h,1.4.2,2026-03-18T09:30:00Z,2026-03-18T09:15:00Z,2026-03-18T09:30:00Z,CNC-VMC-07,C20260318-0912-T12,spindle_overheat_or_chatter_24h,0.87,0.65,alert,"{""active_alarm_code"":0.61}",features.v3

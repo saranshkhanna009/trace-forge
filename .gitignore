@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+artifacts/
+data/cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local

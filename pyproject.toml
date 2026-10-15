@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "traceforge"
+version = "0.1.0"
+description = "Evidence-based industrial AI reliability and root-cause investigation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+orchestration = [
+  "langchain-core>=0.3,<1",
+  "langgraph>=0.2,<1",
+]
+retrieval = [
+  "rank-bm25>=0.2,<1",
+  "sentence-transformers>=3,<4",
+  "faiss-cpu>=1.8,<2",
+]
+deep-learning = [
+  "torch>=2.3,<3",
+  "transformers>=4.45,<5",
+  "scikit-learn>=1.5,<2",
+]
+api = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.30,<1",
+]
+dashboard = [
+  "streamlit>=1.39,<2",
+  "plotly>=5.24,<6",
+]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.6,<1",
+  "mypy>=1.11,<2",
+]
+
+[project.scripts]
+traceforge = "traceforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

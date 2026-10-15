@@ -1,0 +1,2 @@
+label_id,machine_id,cycle_id,label_window_start_utc,label_window_end_utc,target_name,actual_label,confirmed_failure_mode,label_source,evidence_refs
+LABEL-001,CNC-VMC-07,C20260318-0912-T12,2026-03-18T09:29:42Z,2026-03-18T10:25:00Z,spindle_overheat_or_chatter_24h,1,coolant_starvation,maintenance,maintenance.csv#ME-002;maintenance.csv#ME-004

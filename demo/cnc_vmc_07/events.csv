@@ -1,0 +1,5 @@
+event_id,machine_id,ts_start_utc,ts_end_utc,cycle_id,event_type,event_code,severity,source,message
+EVT-001,CNC-VMC-07,2026-03-18T09:12:00Z,2026-03-18T09:30:05Z,C20260318-0912-T12,state_change,RUNNING,info,controller,Finishing cycle started
+EVT-002,CNC-VMC-07,2026-03-18T09:29:42Z,2026-03-18T09:30:05Z,C20260318-0912-T12,alarm,SPINDLE_TEMP_HIGH,high,controller,Spindle temperature exceeded configured limit
+EVT-003,CNC-VMC-07,2026-03-18T09:29:50Z,2026-03-18T09:30:05Z,C20260318-0912-T12,operator_note,CHATTER_HEARD,warning,operator,Audible chatter during finishing pass
+EVT-004,CNC-VMC-07,2026-03-18T09:30:05Z,2026-03-18T09:30:05Z,C20260318-0912-T12,state_change,CYCLE_ABORTED,high,controller,Cycle aborted by spindle protection

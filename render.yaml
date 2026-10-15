@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: traceforge-api
+    runtime: python
+    plan: free
+    buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]"
+    startCommand: python -m uvicorn traceforge.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: TRACEFORGE_CASE_ROOT
+        value: demo
+      - key: TRACEFORGE_DEFAULT_CASE_KEY
+        value: cnc_vmc_07
+      - key: TRACEFORGE_MAX_TOP_K
+        value: "20"
+      - key: TRACEFORGE_MAX_TELEMETRY_ROWS
+        value: "5000"
+      - key: FRONTEND_ORIGINS
+        sync: false
