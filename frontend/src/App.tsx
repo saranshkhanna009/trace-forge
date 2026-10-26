@@ -187,8 +187,8 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
 
 function useChartTooltip() {
   return {
-    contentStyle: { background: "#101d2d", border: "1px solid #2a4059", borderRadius: 10, color: "#e8eef7" },
-    labelStyle: { color: "#91a2b8" },
+    contentStyle: { background: "#ffffff", border: "1px solid #cbd7e2", borderRadius: 10, color: "#172b43", boxShadow: "0 8px 24px rgba(35, 56, 78, .14)" },
+    labelStyle: { color: "#74869a" },
   };
 }
 
@@ -220,15 +220,15 @@ function TelemetryChart({
     signals.forEach((signal) => { chartRow[signal] = row[signal] ?? null; });
     return chartRow;
   });
-  const colors = ["#5fe4d1", "#7297ff", "#ef7c86", "#f2ba67", "#c292ff"];
+  const colors = ["#d94f61", "#3269d6", "#d99a2d", "#0d9c8e", "#7650b5"];
   return (
     <ChartCard title={title} subtitle={subtitle}>
       {signals.length && rows.length ? (
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
-            <CartesianGrid stroke="#203249" vertical={false} />
-            <XAxis dataKey="timestamp" stroke="#91a2b8" />
-            <YAxis stroke="#91a2b8" />
+            <CartesianGrid stroke="#e2e9ef" vertical={false} />
+            <XAxis dataKey="timestamp" stroke="#74869a" />
+            <YAxis stroke="#74869a" />
             <Tooltip {...tooltip} />
             {signals.map((signal, index) => (
               <Line key={signal} type="monotone" dataKey={signal} name={signalLabel(signal)} stroke={colors[index % colors.length]} strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
@@ -276,12 +276,12 @@ function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry
           {quality.length ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={quality} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
-                <CartesianGrid stroke="#203249" vertical={false} />
-                <XAxis dataKey="label" stroke="#91a2b8" />
-                <YAxis stroke="#91a2b8" />
+                <CartesianGrid stroke="#e2e9ef" vertical={false} />
+                <XAxis dataKey="label" stroke="#74869a" />
+                <YAxis stroke="#74869a" />
                <Tooltip {...useChartTooltip()} />
                  <Bar dataKey="value" name={`Quality ${quality[0]?.unit || "value"}`} radius={[5, 5, 0, 0]}>
-                  {quality.map((item) => <Cell key={item.label} fill={item.label === "FAIL" ? "#ef7c86" : "#5fe4d1"} />)}
+                  {quality.map((item) => <Cell key={item.label} fill={item.label === "FAIL" ? "#d94f61" : "#0d9c8e"} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -344,8 +344,8 @@ function MlEngineeringView({ data, predictions }: { data: AnalysisResponse; pred
       </div>
       <ChartCard title="Prediction timing" subtitle="Late detection is not preventive warning">
         {predictionRows.length ? <ResponsiveContainer width="100%" height="100%"><ComposedChart data={predictionRows} margin={{ top: 16, right: 20, bottom: 8, left: 0 }}>
-          <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestampLabel" stroke="#91a2b8" /><YAxis domain={[0, 1]} stroke="#91a2b8" /><Tooltip {...tooltip} /><ReferenceLine y={threshold} stroke="#f2ba67" strokeDasharray="5 5" label={{ value: `threshold ${threshold}`, fill: "#f2ba67" }} />
-          <Line type="monotone" dataKey="score" name="Risk score" stroke="#5fe4d1" strokeWidth={3} dot={{ r: 6, fill: "#5fe4d1" }} />
+          <CartesianGrid stroke="#e2e9ef" vertical={false} /><XAxis dataKey="timestampLabel" stroke="#74869a" /><YAxis domain={[0, 1]} stroke="#74869a" /><Tooltip {...tooltip} /><ReferenceLine y={threshold} stroke="#d99a2d" strokeDasharray="5 5" label={{ value: `threshold ${threshold}`, fill: "#aa7110" }} />
+          <Line type="monotone" dataKey="score" name="Risk score" stroke="#0d9c8e" strokeWidth={3} dot={{ r: 6, fill: "#0d9c8e" }} />
         </ComposedChart></ResponsiveContainer> : <div className="empty-note">Early-warning performance was not evaluated.</div>}
       </ChartCard>
       <SectionHeader eyebrow="Prioritized remediation" title="Audit findings queue" />
@@ -354,7 +354,7 @@ function MlEngineeringView({ data, predictions }: { data: AnalysisResponse; pred
       </tbody></table></div>
       <div className="split-grid">
         <ChartCard title="Feature drift" subtitle="Review threshold at 20%">
-          {driftEntries.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={driftEntries.map(([feature, value]) => ({ feature, value }))} layout="vertical" margin={{ top: 8, right: 28, bottom: 8, left: 10 }}><CartesianGrid stroke="#203249" horizontal={false} /><XAxis type="number" domain={[0, 0.6]} tickFormatter={(value) => `${Math.round(value * 100)}%`} stroke="#91a2b8" /><YAxis dataKey="feature" type="category" width={150} tick={{ fill: "#b8c5d6", fontSize: 11 }} /><Tooltip {...tooltip} formatter={(value: number) => `${(value * 100).toFixed(0)}%`} /><ReferenceLine x={0.2} stroke="#f2ba67" strokeDasharray="5 5" /><Bar dataKey="value" fill="#ef7c86" radius={[0, 5, 5, 0]} /></BarChart></ResponsiveContainer> : <div className="empty-note">Drift not reported.</div>}
+          {driftEntries.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={driftEntries.map(([feature, value]) => ({ feature, value }))} layout="vertical" margin={{ top: 8, right: 28, bottom: 8, left: 10 }}><CartesianGrid stroke="#e2e9ef" horizontal={false} /><XAxis type="number" domain={[0, 0.6]} tickFormatter={(value) => `${Math.round(value * 100)}%`} stroke="#74869a" /><YAxis dataKey="feature" type="category" width={150} tick={{ fill: "#52677d", fontSize: 11 }} /><Tooltip {...tooltip} formatter={(value: number) => `${(value * 100).toFixed(0)}%`} /><ReferenceLine x={0.2} stroke="#d99a2d" strokeDasharray="5 5" /><Bar dataKey="value" fill="#7650b5" radius={[0, 5, 5, 0]} /></BarChart></ResponsiveContainer> : <div className="empty-note">Drift not reported.</div>}
         </ChartCard>
         <FeatureCoverage manifest={manifest} telemetry={data.result.data_quality} />
       </div>
@@ -400,7 +400,7 @@ function ManagementView({ data }: { data: AnalysisResponse }) {
   return <>
     <div className="panel executive-panel"><span className="eyebrow">Executive summary</span><h2>{root?.title || "Insufficient evidence"}</h2><p>{root ? `${root.rationale} The corrective work was validated, but the predictive model requires remediation.` : "The available case data does not support an executive conclusion."}</p></div>
     <div className="summary-grid summary-grid-4"><Metric label="Incident severity" value={result.status} tone="danger" /><Metric label="Confirmed cause" value={root ? formatPercent(root.score) : "—"} tone="success" /><Metric label="Validation" value={data.resolution_status} tone="success" /><Metric label="Actions required" value={String(result.model_findings.length)} tone="warning" /></div>
-    <div className="split-grid"><ChartCard title="Before / after quality" subtitle="Surface finish Ra µm"><ResponsiveContainer width="100%" height="100%"><BarChart data={quality.map((value, index) => ({ label: index === 0 ? "Failed part" : "Validation cut", value }))} margin={{ top: 16, right: 18, bottom: 8, left: 0 }}><CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="label" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip contentStyle={{ background: "#101d2d", border: "1px solid #2a4059" }} /><Bar dataKey="value" name="Ra µm" radius={[5, 5, 0, 0]}>{quality.map((_, index) => <Cell key={index} fill={index === 0 ? "#ef7c86" : "#5fe4d1"} />)}</Bar></BarChart></ResponsiveContainer></ChartCard><div className="panel causal-panel"><span className="eyebrow">Causal story</span><div className="causal-chain">{causalSteps.map((step, index) => <div key={step} className="causal-step"><span>0{index + 1}</span><strong>{step}</strong>{index < 4 && <i>→</i>}</div>)}</div><p>{spindleBearing ? "Bearing service restored temperature and vibration, and the validation cut passed the dimensional and surface-finish limits." : "Correction restored coolant flow, replaced the worn tool, and produced a passing validation cut."}</p></div></div>
+    <div className="split-grid"><ChartCard title="Before / after quality" subtitle="Production quality measurement"><ResponsiveContainer width="100%" height="100%"><BarChart data={quality.map((value, index) => ({ label: index === 0 ? "Failed part" : "Validation cut", value }))} margin={{ top: 16, right: 18, bottom: 8, left: 0 }}><CartesianGrid stroke="#e2e9ef" vertical={false} /><XAxis dataKey="label" stroke="#74869a" /><YAxis stroke="#74869a" /><Tooltip {...useChartTooltip()} /><Bar dataKey="value" name="Quality value" radius={[5, 5, 0, 0]}>{quality.map((_, index) => <Cell key={index} fill={index === 0 ? "#d94f61" : "#0d9c8e"} />)}</Bar></BarChart></ResponsiveContainer></ChartCard><div className="panel causal-panel"><span className="eyebrow">Causal story</span><div className="causal-chain">{causalSteps.map((step, index) => <div key={step} className="causal-step"><span>0{index + 1}</span><strong>{step}</strong>{index < 4 && <i>→</i>}</div>)}</div><p>{spindleBearing ? "Bearing service restored temperature and vibration, and the validation cut passed the dimensional and surface-finish limits." : "Correction restored the machine condition and produced a passing validation result."}</p></div></div>
     <SectionHeader eyebrow="Decisions" title="Corrective actions" /><div className="panel table-scroll"><table><thead><tr><th>Priority</th><th>Decision</th><th>Finding</th><th>Why it matters</th></tr></thead><tbody>{decisions.map(([decision, finding, reason], index) => <tr key={finding}><td><span className="priority">0{index + 1}</span></td><td><strong>{decision}</strong></td><td className="mono">{finding}</td><td>{reason}</td></tr>)}</tbody></table></div><p className="muted-note">Business cost, downtime, throughput, and fleet trends are not quantified in this single-case fixture.</p>
   </>;
 }

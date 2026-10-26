@@ -106,3 +106,109 @@ button { cursor: pointer; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 1080px) { .sidebar { width: 235px; flex-basis: 235px; }.summary-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }.layer-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 760px) { .app-shell { display: block; }.sidebar { width: 100%; border-right: 0; border-bottom: 1px solid #21354c; padding: 18px; }.brand { padding-bottom: 13px; }.persona-nav { grid-template-columns: repeat(2, 1fr); }.sidebar-footer { display: none; }.main-content { padding: 25px 15px; }.topbar { display: block; }.topbar-actions { justify-content: flex-start; margin-top: 18px; }.case-meta { gap: 9px 14px; }.persona-label { margin-left: 0; width: 100%; }.problem-tabs { margin-top: -2px; }.problem-tabs-heading { align-items: flex-start; flex-direction: column; gap: 5px; }.summary-grid-4, .split-grid { grid-template-columns: 1fr; }.layer-grid { grid-template-columns: repeat(2, 1fr); }.graph-lane { grid-template-columns: 1fr; gap: 5px; }.causal-chain { grid-template-columns: 1fr; }.causal-step { min-height: auto; }.causal-step i { display: none; }.app-footer { display: block; line-height: 1.7; } }
+
+/* Approved light workspace theme: semantic color carries state, not decoration. */
+:root {
+  color: #172b43;
+  background: #eef2f5;
+}
+
+body { background: #eef2f5; color: #172b43; }
+button, select { color: inherit; }
+button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #8acdb7; outline-offset: 2px; }
+
+.app-shell { background: linear-gradient(135deg, #f5f8fa 0%, #e9eef3 100%); color: #172b43; }
+.sidebar { width: 270px; flex-basis: 270px; background: #f8fafc; border-right: 1px solid #d5dfe8; padding: 28px 18px 20px; box-shadow: 8px 0 24px rgba(35, 56, 78, .04); }
+.brand { padding-bottom: 28px; }
+.brand strong { color: #172b43; }
+.brand small { color: #74869a; }
+.brand-mark { width: 40px; height: 40px; border-radius: 12px; color: #fff; background: linear-gradient(135deg, #172b43, #2a4563); box-shadow: 0 8px 18px rgba(23, 43, 67, .2); }
+.sidebar-section label { color: #74869a; }
+.sidebar select { border-color: #cbd7e2; background: #fff; color: #172b43; box-shadow: 0 3px 10px rgba(35, 56, 78, .05); }
+.eyebrow { color: #087f79; }
+.persona { color: #52677d; }
+.persona:hover { background: #eef7f6; color: #172b43; }
+.persona.active { background: #e5f5f3; border-color: #64bdb3; color: #172b43; }
+.persona-icon { color: #087f79; }
+.persona small { color: #74869a; }
+.sidebar-footer { border-top-color: #d5dfe8; color: #74869a; }
+.sidebar-footer small { color: #9aa9b8; }
+.status-pip { background: #1aa986; box-shadow: 0 0 0 4px rgba(26, 169, 134, .14); }
+
+.main-content { padding: 34px clamp(22px, 4vw, 64px) 25px; }
+.topbar h1 { color: #172b43; }
+.topbar h1 span { color: #9aa9b8; }
+.topbar p { color: #52677d; }
+.icon-button { border-color: #b9c8d5; color: #31445a; background: #fff; box-shadow: 0 3px 10px rgba(35, 56, 78, .05); }
+.icon-button:hover { border-color: #0d9c8e; color: #087f79; background: #f1fbfa; }
+.case-meta { border-color: #d5dfe8; color: #74869a; }
+.case-meta strong { color: #172b43; }
+.persona-label { color: #087f79; }
+
+.problem-tabs { border-color: #d3dee8; background: rgba(255, 255, 255, .78); box-shadow: 0 6px 18px rgba(35, 56, 78, .06); }
+.problem-tabs-heading strong { color: #172b43; }
+.problem-tabs-heading small { color: #74869a; }
+.problem-tab { border-color: #cbd7e2; background: #fff; color: #31445a; box-shadow: 0 3px 8px rgba(35, 56, 78, .04); }
+.problem-tab:hover:not(:disabled) { border-color: #64bdb3; background: #f1fbfa; }
+.problem-tab.active { border-color: #0d9c8e; background: #e5f5f3; box-shadow: inset 0 3px #0d9c8e, 0 4px 12px rgba(13, 156, 142, .12); }
+.problem-tab:disabled { opacity: .58; }
+.problem-tab-family { color: #087f79; }
+.problem-tab small { color: #74869a; }
+
+.badge-danger { background: #fff0f2; border-color: #e69aa5; color: #c83e51; }
+.badge-warning { background: #fff8e8; border-color: #e8c97f; color: #aa7110; }
+.badge-success { background: #eaf8f3; border-color: #8acdb7; color: #147d60; }
+.badge-neutral { background: #f0f4f7; border-color: #cbd7e2; color: #52677d; }
+.inline-error { border-color: #e69aa5; background: #fff0f2; color: #a93449; }
+
+.metric-card { border-color: #d3dee8; background: #fff; box-shadow: 0 7px 18px rgba(35, 56, 78, .08); }
+.metric-card strong { color: #172b43; }
+.metric-label { color: #74869a; }
+.metric-detail { color: #74869a; }
+.metric-danger { border-top-color: #d94f61; }
+.metric-warning { border-top-color: #d99a2d; }
+.metric-success { border-top-color: #0d9c8e; }
+.split-grid { gap: 16px; }
+.panel { background: #fff; border-color: #d3dee8; box-shadow: 0 7px 18px rgba(35, 56, 78, .07); }
+.story-panel h3 { color: #172b43; }
+.story-panel p, .executive-panel p, .chain-panel p, .causal-panel p { color: #52677d; }
+.next-action { background: #fff8e8; border-color: #e8c97f; }
+.next-action span { color: #aa7110; }
+.next-action strong { color: #31445a; }
+.chart-heading h3 { color: #172b43; }
+.chart-heading span { color: #74869a; }
+.evidence-item { background: #f6f9fb; border-color: #cbd7e2; }
+.evidence-item summary { color: #31445a; }
+.evidence-item small { color: #74869a; }
+.evidence-item p { color: #52677d; }
+.empty-note { color: #74869a; }
+.section-header h2 { color: #172b43; }
+
+.timeline { background: #fff; }
+.timeline-row:not(:last-child)::before { background: #d5dfe8; }
+.timeline-time { color: #74869a; }
+.timeline-dot { background: #9aa9b8; border-color: #fff; box-shadow: 0 0 0 1px #b9c8d5; }
+.timeline-alarm, .timeline-incident_marker { background: #d94f61; }.timeline-maintenance { background: #0d9c8e; }.timeline-quality { background: #d99a2d; }
+.timeline-title { color: #172b43; }
+.timeline-row p { color: #52677d; }.timeline-row small { color: #74869a; }
+
+.table-scroll table { background: #fff; }
+.table-scroll th { background: #f1f5f8; color: #74869a; }
+.table-scroll td { color: #52677d; border-top-color: #e0e7ed; }
+.table-scroll tr:hover td { background: #f7fafc; }
+.table-scroll td strong { color: #172b43; }.table-scroll td small { color: #74869a; }
+.mono { color: #52677d !important; }.priority { background: #e5f5f3; color: #087f79; }
+.executive-panel { background: linear-gradient(125deg, #e5f5f3, #fff); }
+.executive-panel h2 { color: #172b43; }
+.causal-step { background: #f6f9fb; border-color: #cbd7e2; }.causal-step span { color: #087f79; }.causal-step strong { color: #172b43; }.causal-step i { color: #0d9c8e; }
+.chain span { border-color: #9bcfc7; background: #e5f5f3; color: #087f79; }.chain i { color: #0d9c8e; }.muted-note { color: #74869a; }
+.coverage-row { background: #f6f9fb; border-color: #d5dfe8; }
+.graph-kind { color: #087f79; }.graph-node { border-color: #cbd7e2; background: #f6f9fb; }.graph-node strong { color: #172b43; }.graph-node small { color: #74869a; }
+.layer-card { border-color: #cbd7e2; background: #fff; }.layer-card span { color: #74869a; }.layer-card strong { color: #087f79; }.layer-card small { color: #74869a; }.layer-missing { border-color: #d5dfe8; }.layer-missing strong { color: #9aa9b8; }
+.json-block { background: #f6f9fb; border-color: #d5dfe8; color: #087f79; }
+.app-footer { color: #74869a; border-top-color: #d5dfe8; }
+.loading-screen { color: #74869a; }.loading-screen h1 { color: #172b43; }.loader { border-color: #d5dfe8; border-top-color: #0d9c8e; }.error-card { border-color: #e69aa5; background: #fff0f2; }.error-card h2 { color: #a93449; }.error-card code { color: #087f79; background: #fff; }
+
+@media (max-width: 760px) {
+  .sidebar { border-bottom-color: #d5dfe8; }
+}
