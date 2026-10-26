@@ -20,14 +20,39 @@ from .manufacturing import incident_report
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CASE_ROOT = PROJECT_ROOT / os.getenv("TRACEFORGE_CASE_ROOT", "demo")
+
+
+def _case_root() -> Path:
+    """Find the bundled case directory across Render checkout layouts."""
+
+    configured = Path(os.getenv("TRACEFORGE_CASE_ROOT", "demo"))
+    if configured.is_absolute():
+        return configured
+    candidates = (
+        PROJECT_ROOT / configured,
+        Path.cwd() / configured,
+        PROJECT_ROOT.parent / configured,
+        Path(__file__).resolve().parents[3] / configured,
+    )
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    # Preserve the normal path in the error-free empty-list response so the
+    # service still starts and its health endpoint remains available.
+    return PROJECT_ROOT / configured
+
+
+CASE_ROOT = _case_root()
 DEFAULT_CASE_KEY = os.getenv("TRACEFORGE_DEFAULT_CASE_KEY", "cnc_vmc_07")
 MAX_TOP_K = int(os.getenv("TRACEFORGE_MAX_TOP_K", "20"))
 MAX_TELEMETRY_ROWS = int(os.getenv("TRACEFORGE_MAX_TELEMETRY_ROWS", "5000"))
 
 
 def _allowed_origins() -> list[str]:
-    configured = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+    # This is a public, read-only synthetic demo. A missing Render variable
+    # should not make every browser request look like a network failure. Set an
+    # exact comma-separated origin list for private deployments.
+    configured = os.getenv("FRONTEND_ORIGINS", "*")
     return [origin.strip().rstrip("/") for origin in configured.split(",") if origin.strip()]
 
 
@@ -75,6 +100,8 @@ def _case_metadata(case_key: str) -> dict[str, Any]:
         "asset_id": case.asset_id,
         "asset_type": case.asset_type,
         "domain": case.domain,
+        "problem_code": case.problem_code,
+        "problem_label": case.problem_label,
         "description": case.description,
         "observed_at": case.observed_at,
     }
@@ -129,7 +156,10 @@ def case_telemetry(
             "coolant_pump_current_a",
             "spindle_bearing_temp_c",
             "spindle_vibration_rms_mm_s",
+            "spindle_motor_current_a",
             "spindle_load_pct",
+            "feed_rate_mm_min",
+            "tool_runtime_min",
         )
         if signal in available
     )

@@ -33,6 +33,13 @@ KEY_SIGNALS = (
     "spindle_load_pct",
 )
 
+SPINDLE_BEARING_SIGNALS = (
+    "spindle_bearing_temp_c",
+    "spindle_vibration_rms_mm_s",
+    "spindle_motor_current_a",
+    "spindle_load_pct",
+)
+
 
 def _parse_timestamp(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -67,8 +74,9 @@ def _median(rows: list[dict[str, str]], field: str) -> float | None:
 def build_signal_summary(
     telemetry_rows: list[dict[str, str]],
     case: IncidentCase,
+    signals: tuple[str, ...] = KEY_SIGNALS,
 ) -> list[dict[str, Any]]:
-    """Compare a stable baseline with the incident window for key CNC signals."""
+    """Compare a stable baseline with the incident window for case signals."""
 
     if not case.incident_start_at:
         return []
@@ -93,7 +101,7 @@ def build_signal_summary(
         ]
         incident_rows = before_start[-1:] or telemetry_rows[-1:]
     summary: list[dict[str, Any]] = []
-    for signal in KEY_SIGNALS:
+    for signal in signals:
         baseline = _median(baseline_rows, signal)
         incident = _median(incident_rows, signal)
         if baseline is None or incident is None:
@@ -279,6 +287,93 @@ def rank_cnc_root_causes(
     return causes
 
 
+def rank_spindle_bearing_root_causes(
+    anomalies: list[SensorAnomaly],
+    findings: list,
+    evidence_hits: list[EvidenceHit],
+    maintenance: list[dict[str, str]],
+) -> list[RootCauseHypothesis]:
+    """Rank spindle-bearing failure modes using condition and work-order evidence."""
+
+    hit_refs = _refs_for_hits(evidence_hits)
+    bearing_refs = _maintenance_refs(maintenance, "spindle_bearing_degradation")
+    tool_refs = _maintenance_refs(maintenance, "tool_wear")
+    temperature_ref = "telemetry.csv#spindle_bearing_temp_c"
+    vibration_ref = "telemetry.csv#spindle_vibration_rms_mm_s"
+    current_ref = "telemetry.csv#spindle_motor_current_a"
+    causes: list[RootCauseHypothesis] = []
+
+    if bearing_refs:
+        causes.append(
+            RootCauseHypothesis(
+                category=RootCauseCategory.PHYSICAL_ASSET,
+                score=0.95,
+                title="Spindle-bearing degradation from lubrication breakdown",
+                rationale="Bearing temperature, vibration, and motor current rose together; maintenance found grease breakdown and race damage, then validated recovery after bearing service.",
+                recommended_check="Inspect spindle-bearing lubrication and vibration before returning the machine to production; repeat the validation cut after service.",
+                evidence_refs=(temperature_ref, vibration_ref, current_ref, *bearing_refs, *hit_refs),
+                status="confirmed",
+                role="root_cause",
+            )
+        )
+    else:
+        causes.append(
+            RootCauseHypothesis(
+                category=RootCauseCategory.PHYSICAL_ASSET,
+                score=0.64,
+                title="Possible spindle-bearing degradation",
+                rationale="Temperature, vibration, and current moved above baseline, but independent bearing inspection evidence is not available.",
+                recommended_check="Inspect bearing lubrication, radial play, and vibration spectrum before the next production cycle.",
+                evidence_refs=(temperature_ref, vibration_ref, current_ref, *hit_refs),
+                status="suspected",
+                role="root_cause",
+            )
+        )
+
+    causes.append(
+        RootCauseHypothesis(
+            category=RootCauseCategory.PHYSICAL_ASSET,
+            score=0.88 if any(item.sensor == "spindle_vibration_rms_mm_s" for item in anomalies) else 0.7,
+            title="Spindle thermal and vibration escalation",
+            rationale="The condition signals escalated during the finishing cycle and coincided with a failed dimensional and surface-quality inspection.",
+            recommended_check="Trend bearing temperature, vibration, and motor current together during a controlled validation cycle.",
+            evidence_refs=(temperature_ref, vibration_ref, *hit_refs),
+            status="confirmed" if anomalies else "suspected",
+            role="symptom",
+        )
+    )
+
+    if tool_refs:
+        causes.append(
+            RootCauseHypothesis(
+                category=RootCauseCategory.PHYSICAL_ASSET,
+                score=0.2,
+                title="Tool wear was not the primary cause",
+                rationale="The tool was inspected without a failure consistent with the temperature and vibration escalation; the bearing service restored the validation result.",
+                recommended_check="Continue the normal tool-life check, but do not replace the tool as the primary corrective action for this incident.",
+                evidence_refs=(*tool_refs, *hit_refs),
+                status="ruled_out",
+                role="alternative",
+            )
+        )
+
+    for finding in findings:
+        causes.append(
+            RootCauseHypothesis(
+                category=finding.category,
+                score=0.92 if finding.severity is RiskLevel.HIGH else 0.7,
+                title=finding.title,
+                rationale=finding.description,
+                recommended_check=finding.disposition.replace("_", " ").capitalize(),
+                evidence_refs=tuple(finding.evidence),
+                status="needs_remediation",
+                role="model_risk",
+            )
+        )
+    causes.sort(key=lambda item: (-item.score, item.title))
+    return causes
+
+
 def analyze_cnc_case(case_dir: str | Path, top_k: int = 5) -> ReliabilityResult:
     root = Path(case_dir)
     case = load_case(root)
@@ -300,19 +395,29 @@ def analyze_cnc_case(case_dir: str | Path, top_k: int = 5) -> ReliabilityResult:
     maintenance = _load_optional_rows(root, case.maintenance_file)
     documents, chunks = load_case_documents(root, case)
 
+    case_signals = SPINDLE_BEARING_SIGNALS if case.problem_code == "spindle_bearing_degradation" else KEY_SIGNALS
     anomalies = [
         anomaly
         for anomaly in detect_anomalies(telemetry, baseline_end_at=case.baseline_end_at)
-        if anomaly.sensor in KEY_SIGNALS
+        if anomaly.sensor in case_signals
     ]
     findings = audit_model(model_report, predictions, case.incident_start_at)
-    query = "coolant filter pressure flow vibration chatter tool wear spindle maintenance incident"
+    query = (
+        "spindle bearing lubrication grease vibration temperature motor current inspection maintenance incident"
+        if case.problem_code == "spindle_bearing_degradation"
+        else "coolant filter pressure flow vibration chatter tool wear spindle maintenance incident"
+    )
     evidence_hits = retrieve(query, chunks, top_k=top_k)
-    root_causes = rank_cnc_root_causes(anomalies, findings, evidence_hits, maintenance)
+    root_causes = (
+        rank_spindle_bearing_root_causes(anomalies, findings, evidence_hits, maintenance)
+        if case.problem_code == "spindle_bearing_degradation"
+        else rank_cnc_root_causes(anomalies, findings, evidence_hits, maintenance)
+    )
     timeline = _timeline(events, quality, maintenance)
-    signal_summary = build_signal_summary(telemetry_rows, case)
+    signal_summary = build_signal_summary(telemetry_rows, case, signals=case_signals)
     data_quality = {
         "telemetry_rows": len(telemetry_rows),
+        "telemetry_fields": sorted(telemetry_rows[0]) if telemetry_rows else [],
         "telemetry_missing_fields": sorted(
             {
                 field
@@ -366,7 +471,7 @@ def incident_report(result: ReliabilityResult) -> dict[str, Any]:
         "incident_end_utc": result.case.incident_end_at,
         "severity": result.status.lower(),
         "root_cause": None if primary is None else {
-            "failure_mode_code": "coolant_starvation" if "coolant" in primary.title.lower() else primary.title,
+            "failure_mode_code": result.case.problem_code or ("coolant_starvation" if "coolant" in primary.title.lower() else primary.title),
             "status": primary.status,
             "confidence": primary.score,
             "role": primary.role,

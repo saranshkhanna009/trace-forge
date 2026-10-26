@@ -102,17 +102,19 @@ def audit_model(
             )
         )
 
-    missing_physical_signals = sorted(
-        {"coolant_flow_l_min", "coolant_pressure_bar"} - declared_features
+    required_physical_signals = set(
+        report.get("required_physical_signals", ("coolant_flow_l_min", "coolant_pressure_bar"))
     )
+    missing_physical_signals = sorted(required_physical_signals - declared_features)
     if missing_physical_signals:
+        signal_label = str(report.get("physical_signal_label", "physical precursor"))
         findings.append(
             _finding(
                 "AUD-002",
                 RootCauseCategory.MODEL,
                 RiskLevel.HIGH,
-                "Primary coolant restriction signals are absent",
-                "The model does not declare the coolant flow and pressure signals needed to detect the incident's physical precursor.",
+                f"Primary {signal_label} signals are absent",
+                f"The model does not declare the {signal_label} signals needed to detect the incident's physical precursor.",
                 evidence=tuple(f"model_manifest.missing_feature.{name}" for name in missing_physical_signals),
                 disposition="add_features_and_retrain",
             )

@@ -20,6 +20,7 @@ from traceforge.telemetry import detect_anomalies, load_telemetry
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CASE_DIR = PROJECT_ROOT / "demo" / "cnc_vmc_07"
+SPINDLE_CASE_DIR = PROJECT_ROOT / "demo" / "cnc_spindle_bearing_01"
 
 
 class TraceForgeTests(unittest.TestCase):
@@ -64,6 +65,17 @@ class TraceForgeTests(unittest.TestCase):
         self.assertTrue(any(item.role == "contributing_factor" for item in result.root_causes))
         self.assertTrue(any(item.role == "alternative" for item in result.root_causes))
         self.assertTrue(any(item.category is RootCauseCategory.DATA_PIPELINE for item in result.root_causes))
+
+    def test_spindle_bearing_case_confirms_bearing_failure(self) -> None:
+        case = load_case(SPINDLE_CASE_DIR)
+        self.assertEqual(case.problem_code, "spindle_bearing_degradation")
+        result = analyze_cnc_case(SPINDLE_CASE_DIR)
+        self.assertEqual(result.status, "CRITICAL")
+        self.assertGreaterEqual(len(result.anomalies), 3)
+        root = next(item for item in result.root_causes if item.role == "root_cause")
+        self.assertEqual(root.status, "confirmed")
+        self.assertIn("bearing", root.title.lower())
+        self.assertTrue(any(item.status == "ruled_out" for item in result.root_causes))
 
     def test_report_contract_and_outputs_are_reproducible(self) -> None:
         first = analyze_cnc_case(CASE_DIR)

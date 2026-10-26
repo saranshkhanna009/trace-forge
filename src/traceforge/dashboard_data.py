@@ -155,7 +155,12 @@ def feature_coverage(dashboard_case: DashboardCase) -> list[dict[str, str]]:
         if feature == "active_alarm_code":
             status = "Leakage risk"
         rows.append({"feature": feature, "status": status})
-    for feature in sorted({"coolant_flow_l_min", "coolant_pressure_bar"} - set(declared)):
+    required = set(
+        dashboard_case.manifest.get(
+            "required_physical_signals", ("coolant_flow_l_min", "coolant_pressure_bar")
+        )
+    )
+    for feature in sorted(required - set(declared)):
         rows.append({"feature": feature, "status": "Missing from model"})
     return rows
 

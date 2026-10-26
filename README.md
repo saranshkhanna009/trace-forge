@@ -137,6 +137,17 @@ demo/cnc_vmc_07/
   model_manifest.json
   documents/
     maintenance-evidence.md
+demo/cnc_spindle_bearing_01/
+  case.json                 # separate CNC spindle-bearing incident fixture
+  telemetry.csv             # bearing temperature, vibration, current, and load
+  events.csv                # spindle alarms and trip events
+  production_quality.csv   # failed and passing validation inspections
+  maintenance.csv          # bearing service and ruled-out tool evidence
+  predictions.csv          # point-in-time bearing-risk scores
+  labels.csv               # validated failure label
+  model_manifest.json       # spindle-bearing model contract and audit metadata
+  documents/
+    maintenance-evidence.md
 ```
 
 ## Quick start
@@ -213,6 +224,12 @@ available:
 ```powershell
 python -m streamlit run dashboard.py
 ```
+
+The React dashboard includes a manufacturing problem library. The original
+coolant-starvation case remains available, and the first additional case is
+the separate `cnc_spindle_bearing_01` fixture. The remaining manufacturing
+problem tabs are presented as upcoming investigations until their case data is
+added.
 
 Build a portable deployment image:
 

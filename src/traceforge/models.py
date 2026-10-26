@@ -110,6 +110,8 @@ class IncidentCase:
     predictions_file: str | None = None
     labels_file: str | None = None
     model_manifest_file: str | None = None
+    problem_code: str | None = None
+    problem_label: str | None = None
 
 
 @dataclass
@@ -170,6 +172,8 @@ class ReliabilityResult:
                 "id": self.case.id,
                 "asset_id": self.case.asset_id,
                 "asset_type": self.case.asset_type,
+                "problem_code": self.case.problem_code,
+                "problem_label": self.case.problem_label,
                 "description": self.case.description,
                 "observed_at": self.case.observed_at,
                 "domain": self.case.domain,

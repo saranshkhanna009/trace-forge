@@ -8,9 +8,10 @@ React/Vite frontend  ───────▶  FastAPI analysis API
 https://<frontend>.vercel.app  https://<api>.onrender.com
 ```
 
-The first deployment is intentionally read-only over the synthetic CNC case
-bundled in `demo/cnc_vmc_07`. Render's free filesystem is ephemeral, so the
-service does not accept uploads or persist user-created cases.
+The first deployment is intentionally read-only over the synthetic CNC cases
+bundled in `demo/cnc_vmc_07` and `demo/cnc_spindle_bearing_01`. Render's free
+filesystem is ephemeral, so the service does not accept uploads or persist
+user-created cases.
 
 ## 1. Deploy the API to Render
 
@@ -23,6 +24,9 @@ service does not accept uploads or persist user-created cases.
    ```text
    https://<your-vercel-project>.vercel.app,http://localhost:5173
    ```
+
+   For the public synthetic demo, `*` is also supported. Do not use `*` when
+   the API serves private industrial data; use the exact Vercel origin instead.
 
 4. Deploy and copy the generated API URL, for example:
 
@@ -41,6 +45,10 @@ service does not accept uploads or persist user-created cases.
    ```json
    {"status":"ok","service":"traceforge","version":"0.1.0"}
    ```
+
+The Render service must use the repository root as its root directory. The
+root must contain `pyproject.toml` and both bundled case directories; otherwise
+the API can start successfully while publishing an incomplete case list.
 
 ### Render configuration supplied by the repository
 
@@ -124,7 +132,8 @@ GET /api/v1/cases/{case_key}/graph
 ```
 
 Case keys are allowlisted directory names, not arbitrary filesystem paths.
-The initial case key is `cnc_vmc_07`.
+The default case key is `cnc_vmc_07`; the spindle-bearing case key is
+`cnc_spindle_bearing_01`.
 
 ## Free-tier behavior
 

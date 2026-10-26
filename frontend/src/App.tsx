@@ -16,6 +16,7 @@ import {
 import { apiBaseUrl, getAnalysis, getCases, getPredictions, getTelemetry } from "./api";
 import type {
   AnalysisResponse,
+  CaseMetadata,
   CaseResult,
   GraphNode,
   PredictionRow,
@@ -32,6 +33,40 @@ const personaOptions: Array<{ id: Persona; label: string; caption: string }> = [
   { id: "Management", label: "Management", caption: "What decisions matter now?" },
   { id: "Reliability", label: "Reliability", caption: "How do the layers and evidence connect?" },
 ];
+
+type ManufacturingProblem = {
+  id: string;
+  label: string;
+  family: string;
+  description: string;
+  caseKey?: string;
+};
+
+const manufacturingProblems: ManufacturingProblem[] = [
+  {
+    id: "spindle-bearing",
+    label: "Spindle bearing",
+    family: "CNC",
+    description: "Bearing degradation, heat, and vibration",
+    caseKey: "cnc_spindle_bearing_01",
+  },
+  { id: "tool-wear", label: "Tool wear / breakage", family: "CNC", description: "Tool-life and cutting-condition failure" },
+  { id: "robot-joint", label: "Robotic-arm joint wear", family: "Robotics", description: "Joint backlash and position error" },
+  { id: "conveyor-motor", label: "Conveyor motor overheating", family: "Material handling", description: "Motor friction, overload, and stoppage" },
+  { id: "conveyor-alignment", label: "Conveyor-belt misalignment", family: "Material handling", description: "Tracking error and belt damage" },
+  { id: "hydraulic-press", label: "Hydraulic-press pressure loss", family: "Forming", description: "Pressure loss and defective forming" },
+  { id: "welding-quality", label: "Welding-quality degradation", family: "Welding", description: "Arc or gas instability and weak welds" },
+  { id: "injection-molding", label: "Injection-molding drift", family: "Polymer", description: "Temperature, pressure, and part-quality drift" },
+  { id: "compressor", label: "Compressor surge / overheating", family: "Utilities", description: "Airflow restriction and compressor trips" },
+];
+
+const currentCaseTab: ManufacturingProblem = {
+  id: "current-cnc-case",
+  label: "Coolant starvation",
+  family: "Current case",
+  description: "Bundled CNC-VMC-07 investigation",
+  caseKey: "cnc_vmc_07",
+};
 
 function formatPercent(value: number | null | undefined): string {
   return value === null || value === undefined ? "—" : `${(value * 100).toFixed(0)}%`;
@@ -53,6 +88,54 @@ function severityClass(value: string): string {
   if (upper === "MEDIUM" || upper === "NEEDS_REVIEW") return "badge badge-warning";
   if (upper === "VALIDATED" || upper === "LOW" || upper === "CONFIRMED") return "badge badge-success";
   return "badge badge-neutral";
+}
+
+function isSpindleBearingCase(data: AnalysisResponse): boolean {
+  return data.result.case.problem_code === "spindle_bearing_degradation";
+}
+
+function ProblemTabs({
+  caseKey,
+  availableCases,
+  onSelect,
+}: {
+  caseKey: string;
+  availableCases: CaseMetadata[];
+  onSelect: (nextCaseKey: string) => void;
+}) {
+  const availableKeys = new Set(availableCases.map((item) => item.case_key));
+  const options = [currentCaseTab, ...manufacturingProblems];
+  return (
+    <section className="problem-tabs" aria-label="Manufacturing problems">
+      <div className="problem-tabs-heading">
+        <div>
+          <span className="eyebrow">Manufacturing problem library</span>
+          <strong>Choose an investigation</strong>
+        </div>
+        <small>{availableCases.length} case{availableCases.length === 1 ? "" : "s"} available</small>
+      </div>
+      <div className="problem-tabs-list">
+        {options.map((problem) => {
+          const available = Boolean(problem.caseKey && availableKeys.has(problem.caseKey));
+          const active = problem.caseKey === caseKey;
+          return (
+            <button
+              className={`problem-tab ${active ? "active" : ""}`}
+              disabled={!available}
+              key={problem.id}
+              onClick={() => problem.caseKey && onSelect(problem.caseKey)}
+              title={available ? problem.description : `${problem.description} · Coming soon`}
+              type="button"
+            >
+              <span className="problem-tab-family">{problem.family}</span>
+              <strong>{problem.label}</strong>
+              <small>{available ? "Open case" : "Coming soon"}</small>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function Metric({ label, value, detail, tone = "default" }: { label: string; value: string; detail?: string; tone?: string }) {
@@ -112,6 +195,7 @@ function useChartTooltip() {
 function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry: TelemetryRow[] }) {
   const result = data.result;
   const root = result.root_causes.find((item) => item.role === "root_cause");
+  const spindleBearing = isSpindleBearingCase(data);
   const quality = result.quality_records.map((record) => ({
     label: (record.quality_status || "unknown").toUpperCase(),
     value: Number(record.surface_finish_ra_um || 0),
@@ -126,7 +210,14 @@ function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry
     timestamp: formatDate(row.timestamp),
     temperature: row.spindle_bearing_temp_c,
     vibration: row.spindle_vibration_rms_mm_s,
+    motorCurrent: row.spindle_motor_current_a,
     load: row.spindle_load_pct,
+  }));
+  const contextRows = telemetry.map((row) => ({
+    timestamp: formatDate(row.timestamp),
+    load: row.spindle_load_pct,
+    motorCurrent: row.spindle_motor_current_a,
+    feedRate: row.feed_rate_mm_min,
   }));
   const tooltip = useChartTooltip();
   return (
@@ -162,22 +253,36 @@ function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry
         </ChartCard>
       </div>
       <div className="split-grid">
-        <ChartCard title="Coolant circuit" subtitle="Flow, pressure, and pump current">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={coolantRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
-              <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
-              <Line type="monotone" dataKey="flow" name="Flow L/min" stroke="#5fe4d1" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-              <Line type="monotone" dataKey="pressure" name="Pressure bar" stroke="#7297ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-              <Line type="monotone" dataKey="current" name="Pump current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
+        {spindleBearing ? (
+          <ChartCard title="Spindle operating load" subtitle="Load, motor current, and feed rate">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={contextRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
+                <Line type="monotone" dataKey="load" name="Spindle load %" stroke="#5fe4d1" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+                <Line type="monotone" dataKey="motorCurrent" name="Motor current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+                <Line type="monotone" dataKey="feedRate" name="Feed rate mm/min" stroke="#7297ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        ) : (
+          <ChartCard title="Coolant circuit" subtitle="Flow, pressure, and pump current">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={coolantRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+                <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
+                <Line type="monotone" dataKey="flow" name="Flow L/min" stroke="#5fe4d1" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+                <Line type="monotone" dataKey="pressure" name="Pressure bar" stroke="#7297ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+                <Line type="monotone" dataKey="current" name="Pump current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
         <ChartCard title="Spindle condition" subtitle="Heat, vibration, and load">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={spindleRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
               <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
               <Line type="monotone" dataKey="temperature" name="Temperature °C" stroke="#ef7c86" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
               <Line type="monotone" dataKey="vibration" name="Vibration mm/s" stroke="#c292ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+              {spindleBearing && <Line type="monotone" dataKey="motorCurrent" name="Motor current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />}
               <Line type="monotone" dataKey="load" name="Load %" stroke="#88a6ba" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -218,6 +323,7 @@ function MaintenanceTable({ records }: { records: CaseResult["maintenance_eviden
 function MlEngineeringView({ data, predictions }: { data: AnalysisResponse; predictions: PredictionRow[] }) {
   const result = data.result;
   const manifest = data.manifest;
+  const spindleBearing = isSpindleBearingCase(data);
   const findings = [...result.model_findings].sort((a, b) => ({ HIGH: 0, MEDIUM: 1, LOW: 2 }[a.severity] ?? 3) - ({ HIGH: 0, MEDIUM: 1, LOW: 2 }[b.severity] ?? 3));
   const maxActionable = Math.max(0, ...predictions.filter((item) => data.result.case.incident_start_at && item.timestamp < data.result.case.incident_start_at).map((item) => item.score));
   const threshold = predictions[0]?.threshold ?? Number(manifest.decision_threshold || 0.65);
@@ -248,32 +354,47 @@ function MlEngineeringView({ data, predictions }: { data: AnalysisResponse; pred
         </ChartCard>
         <FeatureCoverage manifest={manifest} telemetry={data.result.data_quality} />
       </div>
-      <div className="panel chain-panel"><span className="eyebrow">Model-to-outcome chain</span><div className="chain"><span>Features</span><i>→</i><span>Prediction</span><i>→</i><span>Alert timing</span><i>→</i><span>Machine event</span><i>→</i><span>Quality label</span></div><p>The current model crossed its threshold after the incident began and did not use the primary coolant precursor signals.</p></div>
+      <div className="panel chain-panel"><span className="eyebrow">Model-to-outcome chain</span><div className="chain"><span>Features</span><i>→</i><span>Prediction</span><i>→</i><span>Alert timing</span><i>→</i><span>Machine event</span><i>→</i><span>Quality label</span></div><p>{spindleBearing ? "The model crossed its threshold after bearing degradation had started and omitted motor current from its declared physical signals." : "The current model crossed its threshold after the incident began and did not use the primary coolant precursor signals."}</p></div>
     </>
   );
 }
 
 function FeatureCoverage({ manifest, telemetry }: { manifest: Record<string, unknown>; telemetry: Record<string, unknown> }) {
   const declared = Array.isArray(manifest.declared_features) ? manifest.declared_features.map(String) : [];
-  const rows = declared.map((feature) => ({ feature, status: feature === "active_alarm_code" ? "Leakage risk" : "Observed" }));
-  const missing = ["coolant_flow_l_min", "coolant_pressure_bar"].filter((feature) => !declared.includes(feature));
+  const observed = new Set(Array.isArray(telemetry.telemetry_fields) ? telemetry.telemetry_fields.map(String) : []);
+  const rows = declared.map((feature) => ({
+    feature,
+    status: feature === "active_alarm_code" ? "Leakage risk" : observed.size && !observed.has(feature) ? "Not observed" : "Observed",
+  }));
+  const required = Array.isArray(manifest.required_physical_signals)
+    ? manifest.required_physical_signals.map(String)
+    : ["coolant_flow_l_min", "coolant_pressure_bar"];
+  const missing = required.filter((feature) => !declared.includes(feature));
   rows.push(...missing.map((feature) => ({ feature, status: "Missing from model" })));
   return <section className="panel"><div className="chart-heading"><div><h3>Feature coverage</h3><span>{Number(telemetry.telemetry_rows || 0)} telemetry rows observed</span></div></div><div className="coverage-list">{rows.map((row) => <div className="coverage-row" key={row.feature}><span className="mono">{row.feature}</span><span className={severityClass(row.status)}>{row.status}</span></div>)}</div></section>;
 }
 
 function ManagementView({ data }: { data: AnalysisResponse }) {
   const result = data.result;
+  const spindleBearing = isSpindleBearingCase(data);
   const root = result.root_causes.find((item) => item.role === "root_cause");
   const quality = result.quality_records.map((record) => Number(record.surface_finish_ra_um || 0));
-  const decisions = [
+  const decisions = spindleBearing ? [
+    ["Inspect bearing health before release", "SB-001", "Confirm lubrication, vibration, and temperature are stable during the validation cycle."],
+    ["Add motor current to the model", "AUD-002", "Capture the electrical precursor that rose with bearing friction."],
+    ["Rebuild the evaluation split", "AUD-003", "Remove overlap and separate late detection from preventive warning."],
+  ] : [
     ["Remove alarm leakage", "AUD-001", "Prevent post-event signals from inflating model quality."],
     ["Add coolant features", "AUD-002", "Capture the physical precursor that appeared before failure."],
     ["Rebuild evaluation", "AUD-003", "Use time- and machine-grouped holdouts without overlap."],
   ];
+  const causalSteps = spindleBearing
+    ? ["Lubrication breakdown", "Bearing friction", "Heat + vibration", "Spindle trip", "Quality failure"]
+    : ["Filter restriction", "Low flow / pressure", "Heat + vibration", "Chatter + tool wear", "Quality failure"];
   return <>
     <div className="panel executive-panel"><span className="eyebrow">Executive summary</span><h2>{root?.title || "Insufficient evidence"}</h2><p>{root ? `${root.rationale} The corrective work was validated, but the predictive model requires remediation.` : "The available case data does not support an executive conclusion."}</p></div>
     <div className="summary-grid summary-grid-4"><Metric label="Incident severity" value={result.status} tone="danger" /><Metric label="Confirmed cause" value={root ? formatPercent(root.score) : "—"} tone="success" /><Metric label="Validation" value={data.resolution_status} tone="success" /><Metric label="Actions required" value={String(result.model_findings.length)} tone="warning" /></div>
-    <div className="split-grid"><ChartCard title="Before / after quality" subtitle="Surface finish Ra µm"><ResponsiveContainer width="100%" height="100%"><BarChart data={quality.map((value, index) => ({ label: index === 0 ? "Failed part" : "Validation cut", value }))} margin={{ top: 16, right: 18, bottom: 8, left: 0 }}><CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="label" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip contentStyle={{ background: "#101d2d", border: "1px solid #2a4059" }} /><Bar dataKey="value" name="Ra µm" radius={[5, 5, 0, 0]}>{quality.map((_, index) => <Cell key={index} fill={index === 0 ? "#ef7c86" : "#5fe4d1"} />)}</Bar></BarChart></ResponsiveContainer></ChartCard><div className="panel causal-panel"><span className="eyebrow">Causal story</span><div className="causal-chain">{["Filter restriction", "Low flow / pressure", "Heat + vibration", "Chatter + tool wear", "Quality failure"].map((step, index) => <div key={step} className="causal-step"><span>0{index + 1}</span><strong>{step}</strong>{index < 4 && <i>→</i>}</div>)}</div><p>Correction restored coolant flow, replaced the worn tool, and produced a passing validation cut.</p></div></div>
+    <div className="split-grid"><ChartCard title="Before / after quality" subtitle="Surface finish Ra µm"><ResponsiveContainer width="100%" height="100%"><BarChart data={quality.map((value, index) => ({ label: index === 0 ? "Failed part" : "Validation cut", value }))} margin={{ top: 16, right: 18, bottom: 8, left: 0 }}><CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="label" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip contentStyle={{ background: "#101d2d", border: "1px solid #2a4059" }} /><Bar dataKey="value" name="Ra µm" radius={[5, 5, 0, 0]}>{quality.map((_, index) => <Cell key={index} fill={index === 0 ? "#ef7c86" : "#5fe4d1"} />)}</Bar></BarChart></ResponsiveContainer></ChartCard><div className="panel causal-panel"><span className="eyebrow">Causal story</span><div className="causal-chain">{causalSteps.map((step, index) => <div key={step} className="causal-step"><span>0{index + 1}</span><strong>{step}</strong>{index < 4 && <i>→</i>}</div>)}</div><p>{spindleBearing ? "Bearing service restored temperature and vibration, and the validation cut passed the dimensional and surface-finish limits." : "Correction restored coolant flow, replaced the worn tool, and produced a passing validation cut."}</p></div></div>
     <SectionHeader eyebrow="Decisions" title="Corrective actions" /><div className="panel table-scroll"><table><thead><tr><th>Priority</th><th>Decision</th><th>Finding</th><th>Why it matters</th></tr></thead><tbody>{decisions.map(([decision, finding, reason], index) => <tr key={finding}><td><span className="priority">0{index + 1}</span></td><td><strong>{decision}</strong></td><td className="mono">{finding}</td><td>{reason}</td></tr>)}</tbody></table></div><p className="muted-note">Business cost, downtime, throughput, and fleet trends are not quantified in this single-case fixture.</p>
   </>;
 }
@@ -302,22 +423,39 @@ function ReliabilityView({ data }: { data: AnalysisResponse }) {
 function App() {
   const [persona, setPersona] = useState<Persona>("Operations");
   const [caseKey, setCaseKey] = useState(defaultCaseKey);
-  const [caseKeys, setCaseKeys] = useState<Array<{ case_key: string; asset_id: string; incident_id: string }>>([]);
+  const [caseKeys, setCaseKeys] = useState<CaseMetadata[]>([]);
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryRow[]>([]);
   const [predictions, setPredictions] = useState<PredictionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [casesReady, setCasesReady] = useState(false);
 
   useEffect(() => {
+    let active = true;
     getCases().then((response) => {
+      if (!active) return;
       setCaseKeys(response.cases);
-      if (response.cases.some((item) => item.case_key === defaultCaseKey)) setCaseKey(defaultCaseKey);
-      else if (response.default_case_key) setCaseKey(response.default_case_key);
-    }).catch((reason: Error) => setError(reason.message));
+      if (!response.cases.length) {
+        setError("The API is reachable, but it published no cases. Verify that demo/cnc_vmc_07 is included in the Render deployment.");
+        setLoading(false);
+        return;
+      }
+      const selected = response.cases.find((item) => item.case_key === defaultCaseKey)?.case_key
+        || response.default_case_key
+        || response.cases[0].case_key;
+      setCaseKey(selected);
+      setCasesReady(true);
+    }).catch((reason: Error) => {
+      if (!active) return;
+      setError(reason.message);
+      setLoading(false);
+    });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
+    if (!casesReady || !caseKey) return;
     let active = true;
     setLoading(true);
     setError(null);
@@ -331,25 +469,36 @@ function App() {
       .catch((reason: Error) => { if (active) setError(reason.message); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [caseKey]);
+  }, [caseKey, casesReady]);
 
   const activePersona = useMemo(() => personaOptions.find((item) => item.id === persona) || personaOptions[0], [persona]);
 
+  const selectCase = (nextCaseKey: string) => {
+    if (nextCaseKey === caseKey) return;
+    setCaseKey(nextCaseKey);
+    setAnalysis(null);
+    setTelemetry([]);
+    setPredictions([]);
+    setLoading(true);
+    setError(null);
+  };
+
   if (loading && !analysis) return <div className="app-shell loading-screen"><div className="brand-mark">TF</div><h1>TraceForge</h1><p>Loading evidence graph and telemetry…</p><div className="loader" /></div>;
-  if (error && !analysis) return <div className="app-shell loading-screen"><div className="brand-mark">TF</div><h1>TraceForge</h1><div className="error-card"><h2>Backend unavailable</h2><p>{error}</p><code>{apiBaseUrl()}</code><p>Start FastAPI locally or set VITE_API_BASE_URL to the Render service URL.</p></div></div>;
+  if (error && !analysis) return <div className="app-shell loading-screen"><div className="brand-mark">TF</div><h1>TraceForge</h1><div className="error-card"><h2>{error.includes("no cases") ? "No cases published" : "Backend unavailable"}</h2><p>{error}</p><code>{apiBaseUrl()}</code><p>{error.includes("no cases") ? "Redeploy the Render service from the repository root so the demo/cnc_vmc_07 fixture is included." : "Start FastAPI locally or set VITE_API_BASE_URL to the Render service URL."}</p></div></div>;
   if (!analysis) return null;
   const { result } = analysis;
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand"><div className="brand-mark">TF</div><div><strong>TraceForge</strong><small>Industrial AI reliability</small></div></div>
-        <div className="sidebar-section"><span className="eyebrow">Workspace</span><label htmlFor="case-select">Case</label><select id="case-select" value={caseKey} onChange={(event) => setCaseKey(event.target.value)}>{caseKeys.length ? caseKeys.map((item) => <option key={item.case_key} value={item.case_key}>{item.asset_id} · {item.case_key}</option>) : <option value={caseKey}>{caseKey}</option>}</select></div>
+         <div className="sidebar-section"><span className="eyebrow">Workspace</span><label htmlFor="case-select">Case</label><select id="case-select" value={caseKey} onChange={(event) => selectCase(event.target.value)}>{caseKeys.length ? caseKeys.map((item) => <option key={item.case_key} value={item.case_key}>{item.asset_id} · {item.case_key}</option>) : <option value={caseKey}>{caseKey}</option>}</select></div>
         <div className="sidebar-section persona-nav"><span className="eyebrow">View for</span>{personaOptions.map((option) => <button className={option.id === persona ? "persona active" : "persona"} onClick={() => setPersona(option.id)} key={option.id}><span className="persona-icon">{option.id === "Operations" ? "◉" : option.id === "ML Engineering" ? "⌁" : option.id === "Management" ? "◫" : "◈"}</span><span><strong>{option.label}</strong><small>{option.caption}</small></span></button>)}</div>
         <div className="sidebar-footer"><span className="status-pip" /> API connected<br /><small>{apiBaseUrl()}</small></div>
       </aside>
-      <main className="main-content">
-        <header className="topbar"><div><span className="eyebrow">Industrial AI reliability workspace</span><h1>{result.case.asset_id} <span>·</span> incident investigation</h1><p>{result.case.description}</p></div><div className="topbar-actions"><span className={severityClass(result.status)}>{result.status}</span><span className={severityClass(analysis.resolution_status)}>{analysis.resolution_status}</span><a className="icon-button" href={`${apiBaseUrl()}/api/v1/cases/${encodeURIComponent(caseKey)}/report`} target="_blank" rel="noreferrer">Export report ↗</a></div></header>
-        <div className="case-meta"><span>Incident <strong>{result.case.id}</strong></span><span>Observed {formatDate(result.case.observed_at)}</span><span>{result.case.asset_type}</span><span className="persona-label">{activePersona.label}: {activePersona.caption}</span></div>
+       <main className="main-content">
+         <header className="topbar"><div><span className="eyebrow">Industrial AI reliability workspace</span><h1>{result.case.asset_id} <span>·</span> {result.case.problem_label || "incident investigation"}</h1><p>{result.case.description}</p></div><div className="topbar-actions"><span className={severityClass(result.status)}>{result.status}</span><span className={severityClass(analysis.resolution_status)}>{analysis.resolution_status}</span><a className="icon-button" href={`${apiBaseUrl()}/api/v1/cases/${encodeURIComponent(caseKey)}/report`} target="_blank" rel="noreferrer">Export report ↗</a></div></header>
+         <div className="case-meta"><span>Incident <strong>{result.case.id}</strong></span><span>Observed {formatDate(result.case.observed_at)}</span><span>{result.case.asset_type}</span><span className="persona-label">{activePersona.label}: {activePersona.caption}</span></div>
+         <ProblemTabs caseKey={caseKey} availableCases={caseKeys} onSelect={selectCase} />
         {error && <div className="inline-error">{error} · Showing the last available analysis.</div>}
         {persona === "Operations" && <OperationsView data={analysis} telemetry={telemetry} />}
         {persona === "ML Engineering" && <MlEngineeringView data={analysis} predictions={predictions} />}

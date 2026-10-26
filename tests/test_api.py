@@ -17,10 +17,16 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "ok")
 
+    def test_public_demo_allows_browser_origin_when_origins_are_unset(self) -> None:
+        response = self.client.get("/healthz", headers={"Origin": "https://demo.vercel.app"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers.get("access-control-allow-origin"), "*")
+
     def test_case_list_and_analysis(self) -> None:
         cases = self.client.get("/api/v1/cases")
         self.assertEqual(cases.status_code, 200)
         self.assertIn("cnc_vmc_07", {item["case_key"] for item in cases.json()["cases"]})
+        self.assertIn("cnc_spindle_bearing_01", {item["case_key"] for item in cases.json()["cases"]})
 
         analysis = self.client.get("/api/v1/cases/cnc_vmc_07/analysis")
         self.assertEqual(analysis.status_code, 200)
@@ -28,6 +34,11 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(body["resolution_status"], "VALIDATED")
         self.assertEqual(body["result"]["status"], "CRITICAL")
         self.assertTrue(any("coolant" in item["title"].lower() for item in body["result"]["root_causes"]))
+
+        spindle = self.client.get("/api/v1/cases/cnc_spindle_bearing_01/analysis")
+        self.assertEqual(spindle.status_code, 200)
+        self.assertEqual(spindle.json()["result"]["case"]["problem_code"], "spindle_bearing_degradation")
+        self.assertTrue(any("bearing" in item["title"].lower() for item in spindle.json()["result"]["root_causes"]))
 
     def test_chart_endpoints_return_bounded_data(self) -> None:
         telemetry = self.client.get(
@@ -40,6 +51,12 @@ class ApiTests(unittest.TestCase):
         predictions = self.client.get("/api/v1/cases/cnc_vmc_07/predictions?limit=2")
         self.assertEqual(predictions.status_code, 200)
         self.assertEqual(len(predictions.json()["rows"]), 2)
+
+        spindle_telemetry = self.client.get(
+            "/api/v1/cases/cnc_spindle_bearing_01/telemetry?signals=spindle_bearing_temp_c,spindle_motor_current_a&limit=2"
+        )
+        self.assertEqual(spindle_telemetry.status_code, 200)
+        self.assertEqual(len(spindle_telemetry.json()["rows"]), 2)
 
     def test_unknown_case_and_signal_are_actionable_errors(self) -> None:
         missing = self.client.get("/api/v1/cases/not-a-real-case/analysis")

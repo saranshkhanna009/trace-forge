@@ -1,0 +1,41 @@
+{
+  "model_id": "spindle_bearing_health_24h",
+  "model_version": "0.9.0",
+  "task": "binary_classification",
+  "target_name": "spindle_bearing_failure_24h",
+  "score_semantics": "probability",
+  "decision_threshold": 0.65,
+  "prediction_interval_minutes": 5,
+  "prediction_horizon_hours": 24,
+  "required_physical_signals": [
+    "spindle_bearing_temp_c",
+    "spindle_vibration_rms_mm_s",
+    "spindle_motor_current_a"
+  ],
+  "physical_signal_label": "spindle-bearing health",
+  "declared_features": [
+    "spindle_load_pct",
+    "spindle_bearing_temp_c",
+    "spindle_vibration_rms_mm_s",
+    "feed_rate_mm_min",
+    "tool_runtime_min",
+    "active_alarm_code"
+  ],
+  "feature_availability_rule": "All feature values must be available at or before predicted_at_utc",
+  "known_exclusions": [
+    "maintenance_action",
+    "quality_result",
+    "post_event_alarm"
+  ],
+  "train_test_overlap": true,
+  "calibration_error": 0.16,
+  "feature_drift": {
+    "spindle_bearing_temp_c": 0.31,
+    "spindle_vibration_rms_mm_s": 0.36,
+    "spindle_motor_current_a": 0.22
+  },
+  "reproducibility": {
+    "seed": 19,
+    "data_version": null
+  }
+}

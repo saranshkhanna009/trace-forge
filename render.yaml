@@ -3,6 +3,7 @@ services:
     name: traceforge-api
     runtime: python
     plan: free
+    rootDir: .
     buildCommand: python -m pip install --upgrade pip && python -m pip install -e ".[api]"
     startCommand: python -m uvicorn traceforge.api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
@@ -18,4 +19,4 @@ services:
       - key: TRACEFORGE_MAX_TELEMETRY_ROWS
         value: "5000"
       - key: FRONTEND_ORIGINS
-        sync: false
+        value: "*"

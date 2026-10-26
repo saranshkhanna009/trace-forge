@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+SB-LABEL-01,CNC-VMC-07,INC-CNC-SPINDLE-01-20260402-001,2026-04-02T15:20:00Z,spindle_bearing_failure_24h,1,maintenance_validation

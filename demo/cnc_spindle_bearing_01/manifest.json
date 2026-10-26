@@ -1,0 +1,21 @@
+{
+  "schema_version": "traceforge.cnc.v1",
+  "machine_id": "CNC-VMC-07",
+  "asset_type": "cnc_vertical_machining_center",
+  "problem_code": "spindle_bearing_degradation",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 60,
+  "incident_ids": [
+    "INC-CNC-SPINDLE-01-20260402-001"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

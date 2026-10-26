@@ -111,6 +111,8 @@ export interface CaseResult {
     id: string;
     asset_id: string;
     asset_type: string;
+    problem_code?: string | null;
+    problem_label?: string | null;
     description: string;
     observed_at: string;
     domain: string;
@@ -155,6 +157,8 @@ export interface CaseMetadata {
   asset_id: string;
   asset_type: string;
   domain: string;
+  problem_code?: string | null;
+  problem_label?: string | null;
   description: string;
   observed_at: string;
 }

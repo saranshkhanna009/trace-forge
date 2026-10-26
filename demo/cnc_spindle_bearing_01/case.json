@@ -1,0 +1,22 @@
+{
+  "id": "INC-CNC-SPINDLE-01-20260402-001",
+  "asset_id": "CNC-VMC-07",
+  "asset_type": "cnc_vertical_machining_center",
+  "domain": "cnc_manufacturing",
+  "problem_code": "spindle_bearing_degradation",
+  "problem_label": "CNC spindle-bearing degradation",
+  "description": "Spindle-bearing lubrication degraded during a finishing operation, followed by rising bearing temperature, vibration, motor current, and a failed dimensional inspection.",
+  "observed_at": "2026-04-02T14:12:00Z",
+  "baseline_end_at": "2026-04-02T14:05:00Z",
+  "incident_start_at": "2026-04-02T14:12:00Z",
+  "incident_end_at": "2026-04-02T14:14:00Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

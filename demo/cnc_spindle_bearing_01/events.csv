@@ -1,0 +1,4 @@
+ts_start_utc,ts_end_utc,event_type,event_code,message,source
+2026-04-02T14:12:00Z,2026-04-02T14:12:30Z,alarm,SPINDLE_VIBRATION_HIGH,Spindle vibration exceeded the operating envelope during the finishing pass,controller
+2026-04-02T14:13:00Z,2026-04-02T14:13:30Z,alarm,SPINDLE_TEMP_HIGH,Bearing temperature crossed the protective warning threshold,controller
+2026-04-02T14:14:00Z,2026-04-02T14:14:30Z,alarm,SPINDLE_TRIP,Machine stopped to protect the spindle assembly,controller
