@@ -1,0 +1,38 @@
+{
+  "model_id": "cnc_tool_wear_risk_24h",
+  "model_version": "1.0.0",
+  "task": "binary_classification",
+  "target_name": "cnc_tool_wear_24h",
+  "score_semantics": "probability",
+  "decision_threshold": 0.65,
+  "prediction_interval_minutes": 10,
+  "prediction_horizon_hours": 24,
+  "required_physical_signals": [
+    "tool_runtime_min",
+    "cutting_force_n",
+    "tool_vibration_rms_mm_s"
+  ],
+  "physical_signal_label": "CNC tool wear or breakage",
+  "declared_features": [
+    "tool_runtime_min",
+    "cutting_force_n",
+    "active_alarm_code"
+  ],
+  "feature_availability_rule": "All feature values must be available at or before predicted_at_utc",
+  "known_exclusions": [
+    "maintenance_action",
+    "quality_result",
+    "post_event_alarm"
+  ],
+  "train_test_overlap": true,
+  "calibration_error": 0.15,
+  "feature_drift": {
+    "tool_runtime_min": 0.24,
+    "cutting_force_n": 0.3,
+    "tool_vibration_rms_mm_s": 0.32999999999999996
+  },
+  "reproducibility": {
+    "seed": 43,
+    "data_version": null
+  }
+}

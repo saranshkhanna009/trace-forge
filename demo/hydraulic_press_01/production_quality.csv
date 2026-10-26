@@ -1,0 +1,3 @@
+quality_id,part_id,cycle_id,machine_id,inspected_at_utc,quality_measurement,quality_limit,quality_unit,quality_label,quality_status,failure_code,inspector_source
+Q-hydraulic_press_01,HOUSING-744,CYCLE-hydraulic_press_01,PRESS-HP-04,2026-05-01T10:14:00Z,1.80,0.50,mm,Formed-part height deviation,fail,process_quality,manual
+Q-hydraulic_press_01-VALIDATION,HOUSING-744,CYCLE-hydraulic_press_01,PRESS-HP-04,2026-05-01T11:00:00Z,0.225,0.50,mm,Formed-part height deviation,pass,,manual

@@ -1,0 +1,22 @@
+{
+  "id": "INC-CONVEYOR-BELT-MISALIGNMENT-20260501-001",
+  "asset_id": "CONVEYOR-L2-01",
+  "asset_type": "belt_conveyor_system",
+  "domain": "industrial_manufacturing",
+  "problem_code": "conveyor_belt_misalignment",
+  "problem_label": "Conveyor-belt misalignment",
+  "description": "The conveyor belt moved off its tracking centerline, increasing drive current and roller vibration before edge contact interrupted production.",
+  "observed_at": "2026-05-01T10:06:00Z",
+  "baseline_end_at": "2026-05-01T10:04:00Z",
+  "incident_start_at": "2026-05-01T10:06:00Z",
+  "incident_end_at": "2026-05-01T10:10:00Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

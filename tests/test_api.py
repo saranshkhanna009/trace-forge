@@ -40,6 +40,30 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(spindle.json()["result"]["case"]["problem_code"], "spindle_bearing_degradation")
         self.assertTrue(any("bearing" in item["title"].lower() for item in spindle.json()["result"]["root_causes"]))
 
+    def test_manufacturing_problem_library_has_an_analysis_for_each_case(self) -> None:
+        expected = {
+            "cnc_vmc_07",
+            "cnc_spindle_bearing_01",
+            "cnc_tool_wear_01",
+            "robot_arm_joint_01",
+            "conveyor_motor_01",
+            "conveyor_belt_alignment_01",
+            "hydraulic_press_01",
+            "welding_quality_01",
+            "injection_molding_01",
+            "air_compressor_01",
+        }
+        listed = {item["case_key"] for item in self.client.get("/api/v1/cases").json()["cases"]}
+        self.assertTrue(expected.issubset(listed))
+        for case_key in expected:
+            with self.subTest(case_key=case_key):
+                response = self.client.get(f"/api/v1/cases/{case_key}/analysis")
+                self.assertEqual(response.status_code, 200)
+                body = response.json()
+                self.assertTrue(body["result"]["root_causes"])
+                self.assertTrue(body["result"]["quality_records"])
+                self.assertEqual(body["resolution_status"], "VALIDATED")
+
     def test_chart_endpoints_return_bounded_data(self) -> None:
         telemetry = self.client.get(
             "/api/v1/cases/cnc_vmc_07/telemetry?signals=coolant_flow_l_min,spindle_vibration_rms_mm_s&limit=2"

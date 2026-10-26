@@ -50,14 +50,14 @@ const manufacturingProblems: ManufacturingProblem[] = [
     description: "Bearing degradation, heat, and vibration",
     caseKey: "cnc_spindle_bearing_01",
   },
-  { id: "tool-wear", label: "Tool wear / breakage", family: "CNC", description: "Tool-life and cutting-condition failure" },
-  { id: "robot-joint", label: "Robotic-arm joint wear", family: "Robotics", description: "Joint backlash and position error" },
-  { id: "conveyor-motor", label: "Conveyor motor overheating", family: "Material handling", description: "Motor friction, overload, and stoppage" },
-  { id: "conveyor-alignment", label: "Conveyor-belt misalignment", family: "Material handling", description: "Tracking error and belt damage" },
-  { id: "hydraulic-press", label: "Hydraulic-press pressure loss", family: "Forming", description: "Pressure loss and defective forming" },
-  { id: "welding-quality", label: "Welding-quality degradation", family: "Welding", description: "Arc or gas instability and weak welds" },
-  { id: "injection-molding", label: "Injection-molding drift", family: "Polymer", description: "Temperature, pressure, and part-quality drift" },
-  { id: "compressor", label: "Compressor surge / overheating", family: "Utilities", description: "Airflow restriction and compressor trips" },
+  { id: "tool-wear", label: "Tool wear / breakage", family: "CNC", description: "Tool-life and cutting-condition failure", caseKey: "cnc_tool_wear_01" },
+  { id: "robot-joint", label: "Robotic-arm joint wear", family: "Robotics", description: "Joint backlash and position error", caseKey: "robot_arm_joint_01" },
+  { id: "conveyor-motor", label: "Conveyor motor overheating", family: "Material handling", description: "Motor friction, overload, and stoppage", caseKey: "conveyor_motor_01" },
+  { id: "conveyor-alignment", label: "Conveyor-belt misalignment", family: "Material handling", description: "Tracking error and belt damage", caseKey: "conveyor_belt_alignment_01" },
+  { id: "hydraulic-press", label: "Hydraulic-press pressure loss", family: "Forming", description: "Pressure loss and defective forming", caseKey: "hydraulic_press_01" },
+  { id: "welding-quality", label: "Welding-quality degradation", family: "Welding", description: "Arc or gas instability and weak welds", caseKey: "welding_quality_01" },
+  { id: "injection-molding", label: "Injection-molding drift", family: "Polymer", description: "Temperature, pressure, and part-quality drift", caseKey: "injection_molding_01" },
+  { id: "compressor", label: "Compressor surge / overheating", family: "Utilities", description: "Airflow restriction and compressor trips", caseKey: "air_compressor_01" },
 ];
 
 const currentCaseTab: ManufacturingProblem = {
@@ -192,41 +192,77 @@ function useChartTooltip() {
   };
 }
 
+function signalLabel(signal: string): string {
+  return titleCase(signal).replace(/\bMm S\b/g, "mm/s").replace(/\bPct\b/g, "%");
+}
+
+function qualityMetric(record: CaseResult["quality_records"][number]): { value: number; unit: string } | null {
+  const raw = record.quality_measurement ?? record.quality_value ?? record.surface_finish_ra_um;
+  if (raw === undefined) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? { value, unit: record.quality_unit || (record.surface_finish_ra_um ? "µm" : "") } : null;
+}
+
+function TelemetryChart({
+  telemetry,
+  signals,
+  title,
+  subtitle,
+}: {
+  telemetry: TelemetryRow[];
+  signals: string[];
+  title: string;
+  subtitle: string;
+}) {
+  const tooltip = useChartTooltip();
+  const rows = telemetry.map((row) => {
+    const chartRow: Record<string, string | number | null> = { timestamp: formatDate(row.timestamp) };
+    signals.forEach((signal) => { chartRow[signal] = row[signal] ?? null; });
+    return chartRow;
+  });
+  const colors = ["#5fe4d1", "#7297ff", "#ef7c86", "#f2ba67", "#c292ff"];
+  return (
+    <ChartCard title={title} subtitle={subtitle}>
+      {signals.length && rows.length ? (
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={rows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
+            <CartesianGrid stroke="#203249" vertical={false} />
+            <XAxis dataKey="timestamp" stroke="#91a2b8" />
+            <YAxis stroke="#91a2b8" />
+            <Tooltip {...tooltip} />
+            {signals.map((signal, index) => (
+              <Line key={signal} type="monotone" dataKey={signal} name={signalLabel(signal)} stroke={colors[index % colors.length]} strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      ) : <div className="empty-note">Telemetry signals are unavailable.</div>}
+    </ChartCard>
+  );
+}
+
 function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry: TelemetryRow[] }) {
   const result = data.result;
   const root = result.root_causes.find((item) => item.role === "root_cause");
   const spindleBearing = isSpindleBearingCase(data);
-  const quality = result.quality_records.map((record) => ({
-    label: (record.quality_status || "unknown").toUpperCase(),
-    value: Number(record.surface_finish_ra_um || 0),
-  }));
-  const coolantRows = telemetry.map((row) => ({
-    timestamp: formatDate(row.timestamp),
-    flow: row.coolant_flow_l_min,
-    pressure: row.coolant_pressure_bar,
-    current: row.coolant_pump_current_a,
-  }));
-  const spindleRows = telemetry.map((row) => ({
-    timestamp: formatDate(row.timestamp),
-    temperature: row.spindle_bearing_temp_c,
-    vibration: row.spindle_vibration_rms_mm_s,
-    motorCurrent: row.spindle_motor_current_a,
-    load: row.spindle_load_pct,
-  }));
-  const contextRows = telemetry.map((row) => ({
-    timestamp: formatDate(row.timestamp),
-    load: row.spindle_load_pct,
-    motorCurrent: row.spindle_motor_current_a,
-    feedRate: row.feed_rate_mm_min,
-  }));
-  const tooltip = useChartTooltip();
+  const quality = result.quality_records.map((record) => {
+    const metric = qualityMetric(record);
+    return { label: (record.quality_status || "unknown").toUpperCase(), value: metric?.value ?? 0, unit: metric?.unit || "" };
+  });
+  const defaultPrimary = spindleBearing
+    ? ["spindle_bearing_temp_c", "spindle_vibration_rms_mm_s", "spindle_motor_current_a"]
+    : ["coolant_flow_l_min", "coolant_pressure_bar", "spindle_bearing_temp_c"];
+  const defaultContext = spindleBearing
+    ? ["spindle_load_pct", "spindle_motor_current_a", "feed_rate_mm_min"]
+    : ["coolant_pump_current_a", "spindle_vibration_rms_mm_s", "spindle_load_pct"];
+  const primarySignals = Array.isArray(data.manifest.primary_signals) ? data.manifest.primary_signals.map(String) : defaultPrimary;
+  const contextSignals = Array.isArray(data.manifest.context_signals) ? data.manifest.context_signals.map(String) : defaultContext;
   return (
     <>
       <div className="summary-grid summary-grid-4">
         <Metric label="Incident severity" value={result.status} tone="danger" detail="Historical incident state" />
         <Metric label="Primary cause" value={root ? formatPercent(root.score) : "—"} tone="success" detail={root?.title || "No confirmed cause"} />
         <Metric label="Resolution" value={data.resolution_status} tone="success" detail="Based on maintenance + validation" />
-        <Metric label="Quality recovery" value={quality.length > 1 ? `${quality[0].value.toFixed(1)} → ${quality.at(-1)?.value.toFixed(1)} µm` : "—"} detail="Surface roughness Ra" />
+        <Metric label="Quality recovery" value={quality.length > 1 ? `${quality[0].value.toFixed(1)} → ${quality.at(-1)?.value.toFixed(1)} ${quality.at(-1)?.unit}` : "—"} detail={quality[0]?.unit ? `Quality metric (${quality[0].unit})` : "Quality metric"} />
       </div>
       <div className="split-grid">
         <div className="panel story-panel">
@@ -243,8 +279,8 @@ function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry
                 <CartesianGrid stroke="#203249" vertical={false} />
                 <XAxis dataKey="label" stroke="#91a2b8" />
                 <YAxis stroke="#91a2b8" />
-                <Tooltip {...tooltip} />
-                <Bar dataKey="value" name="Ra µm" radius={[5, 5, 0, 0]}>
+               <Tooltip {...useChartTooltip()} />
+                 <Bar dataKey="value" name={`Quality ${quality[0]?.unit || "value"}`} radius={[5, 5, 0, 0]}>
                   {quality.map((item) => <Cell key={item.label} fill={item.label === "FAIL" ? "#ef7c86" : "#5fe4d1"} />)}
                 </Bar>
               </BarChart>
@@ -253,40 +289,8 @@ function OperationsView({ data, telemetry }: { data: AnalysisResponse; telemetry
         </ChartCard>
       </div>
       <div className="split-grid">
-        {spindleBearing ? (
-          <ChartCard title="Spindle operating load" subtitle="Load, motor current, and feed rate">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={contextRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
-                <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
-                <Line type="monotone" dataKey="load" name="Spindle load %" stroke="#5fe4d1" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                <Line type="monotone" dataKey="motorCurrent" name="Motor current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                <Line type="monotone" dataKey="feedRate" name="Feed rate mm/min" stroke="#7297ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        ) : (
-          <ChartCard title="Coolant circuit" subtitle="Flow, pressure, and pump current">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={coolantRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
-                <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
-                <Line type="monotone" dataKey="flow" name="Flow L/min" stroke="#5fe4d1" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                <Line type="monotone" dataKey="pressure" name="Pressure bar" stroke="#7297ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                <Line type="monotone" dataKey="current" name="Pump current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        )}
-        <ChartCard title="Spindle condition" subtitle="Heat, vibration, and load">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={spindleRows} margin={{ top: 12, right: 12, bottom: 8, left: 0 }}>
-              <CartesianGrid stroke="#203249" vertical={false} /><XAxis dataKey="timestamp" stroke="#91a2b8" /><YAxis stroke="#91a2b8" /><Tooltip {...tooltip} />
-              <Line type="monotone" dataKey="temperature" name="Temperature °C" stroke="#ef7c86" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-              <Line type="monotone" dataKey="vibration" name="Vibration mm/s" stroke="#c292ff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-              {spindleBearing && <Line type="monotone" dataKey="motorCurrent" name="Motor current A" stroke="#f2ba67" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />}
-              <Line type="monotone" dataKey="load" name="Load %" stroke="#88a6ba" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
+        <TelemetryChart telemetry={telemetry} signals={primarySignals} title="Primary condition signals" subtitle="Signals selected for this manufacturing problem" />
+        <TelemetryChart telemetry={telemetry} signals={contextSignals} title="Operating context" subtitle="Load and process context during the incident" />
       </div>
       <SectionHeader eyebrow="Sequence of events" title="Incident timeline" />
       <Timeline events={result.timeline} />
@@ -378,7 +382,7 @@ function ManagementView({ data }: { data: AnalysisResponse }) {
   const result = data.result;
   const spindleBearing = isSpindleBearingCase(data);
   const root = result.root_causes.find((item) => item.role === "root_cause");
-  const quality = result.quality_records.map((record) => Number(record.surface_finish_ra_um || 0));
+  const quality = result.quality_records.map((record) => qualityMetric(record)?.value || 0);
   const decisions = spindleBearing ? [
     ["Inspect bearing health before release", "SB-001", "Confirm lubrication, vibration, and temperature are stable during the validation cycle."],
     ["Add motor current to the model", "AUD-002", "Capture the electrical precursor that rose with bearing friction."],
@@ -388,7 +392,9 @@ function ManagementView({ data }: { data: AnalysisResponse }) {
     ["Add coolant features", "AUD-002", "Capture the physical precursor that appeared before failure."],
     ["Rebuild evaluation", "AUD-003", "Use time- and machine-grouped holdouts without overlap."],
   ];
-  const causalSteps = spindleBearing
+  const causalSteps = Array.isArray(data.manifest.causal_chain)
+    ? data.manifest.causal_chain.map(String)
+    : spindleBearing
     ? ["Lubrication breakdown", "Bearing friction", "Heat + vibration", "Spindle trip", "Quality failure"]
     : ["Filter restriction", "Low flow / pressure", "Heat + vibration", "Chatter + tool wear", "Quality failure"];
   return <>

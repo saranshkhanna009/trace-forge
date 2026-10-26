@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+LABEL-robot_arm_joint_01,ROBOT-ASM-03,INC-ROBOT-ARM-JOINT-WEAR-20260501-001,2026-05-01T11:00:00Z,robot_arm_joint_wear_24h,1,maintenance_validation

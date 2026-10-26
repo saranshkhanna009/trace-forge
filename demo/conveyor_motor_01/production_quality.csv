@@ -1,0 +1,3 @@
+quality_id,part_id,cycle_id,machine_id,inspected_at_utc,quality_measurement,quality_limit,quality_unit,quality_label,quality_status,failure_code,inspector_source
+Q-conveyor_motor_01,PALLET-220,CYCLE-conveyor_motor_01,CONVEYOR-L3-02,2026-05-01T10:14:00Z,1.80,0.50,s,Transfer timing deviation,fail,process_quality,manual
+Q-conveyor_motor_01-VALIDATION,PALLET-220,CYCLE-conveyor_motor_01,CONVEYOR-L3-02,2026-05-01T11:00:00Z,0.225,0.50,s,Transfer timing deviation,pass,,manual

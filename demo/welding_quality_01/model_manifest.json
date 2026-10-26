@@ -1,0 +1,38 @@
+{
+  "model_id": "welding_quality_degradation_risk_24h",
+  "model_version": "1.0.0",
+  "task": "binary_classification",
+  "target_name": "welding_quality_degradation_24h",
+  "score_semantics": "probability",
+  "decision_threshold": 0.65,
+  "prediction_interval_minutes": 10,
+  "prediction_horizon_hours": 24,
+  "required_physical_signals": [
+    "shielding_gas_flow_l_min",
+    "arc_voltage_v",
+    "torch_temp_c"
+  ],
+  "physical_signal_label": "Welding-quality degradation",
+  "declared_features": [
+    "shielding_gas_flow_l_min",
+    "arc_voltage_v",
+    "active_alarm_code"
+  ],
+  "feature_availability_rule": "All feature values must be available at or before predicted_at_utc",
+  "known_exclusions": [
+    "maintenance_action",
+    "quality_result",
+    "post_event_alarm"
+  ],
+  "train_test_overlap": true,
+  "calibration_error": 0.15,
+  "feature_drift": {
+    "shielding_gas_flow_l_min": 0.3,
+    "arc_voltage_v": 0.27,
+    "torch_temp_c": 0.32999999999999996
+  },
+  "reproducibility": {
+    "seed": 48,
+    "data_version": null
+  }
+}

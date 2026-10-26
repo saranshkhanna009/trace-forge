@@ -120,7 +120,7 @@ src/traceforge/
   langgraph_flow.py # optional LangGraph orchestration
   models.py         # industrial reliability domain model
   retrieval.py      # evidence retrieval baseline
-  manufacturing.py  # CNC incident correlation and report writers
+  manufacturing.py  # manufacturing problem analyzers and report writers
   telemetry.py      # CSV loading and anomaly detection
   workflow.py       # first end-to-end case workflow
 tests/
@@ -148,6 +148,14 @@ demo/cnc_spindle_bearing_01/
   model_manifest.json       # spindle-bearing model contract and audit metadata
   documents/
     maintenance-evidence.md
+demo/cnc_tool_wear_01/             # CNC tool wear and edge-failure case
+demo/robot_arm_joint_01/            # robotic-arm Joint 3 wear case
+demo/conveyor_motor_01/             # conveyor drive-motor overheating case
+demo/conveyor_belt_alignment_01/    # conveyor tracking case
+demo/hydraulic_press_01/            # hydraulic forming-pressure case
+demo/welding_quality_01/            # shielding-gas and arc-quality case
+demo/injection_molding_01/          # molding thermal-process drift case
+demo/air_compressor_01/             # compressor airflow and thermal-trip case
 ```
 
 ## Quick start
@@ -226,10 +234,13 @@ python -m streamlit run dashboard.py
 ```
 
 The React dashboard includes a manufacturing problem library. The original
-coolant-starvation case remains available, and the first additional case is
-the separate `cnc_spindle_bearing_01` fixture. The remaining manufacturing
-problem tabs are presented as upcoming investigations until their case data is
-added.
+coolant-starvation case remains available alongside separate fixtures for
+spindle-bearing degradation, tool wear, robotic-arm joint wear, conveyor motor
+overheating, conveyor-belt misalignment, hydraulic-press pressure loss,
+welding-quality degradation, injection-molding drift, and compressor
+overheating. Each case is independently selectable from the problem tabs and
+uses the shared evidence graph, telemetry, prediction, quality, and maintenance
+views.
 
 Build a portable deployment image:
 

@@ -1,0 +1,22 @@
+{
+  "id": "INC-CNC-TOOL-WEAR-20260501-001",
+  "asset_id": "CNC-VMC-07",
+  "asset_type": "cnc_vertical_machining_center",
+  "domain": "industrial_manufacturing",
+  "problem_code": "cnc_tool_wear",
+  "problem_label": "CNC tool wear or breakage",
+  "description": "Tool T19 exceeded its effective cutting-life window, followed by rising cutting force, vibration, chatter, and a failed dimensional inspection.",
+  "observed_at": "2026-05-01T10:06:00Z",
+  "baseline_end_at": "2026-05-01T10:04:00Z",
+  "incident_start_at": "2026-05-01T10:06:00Z",
+  "incident_end_at": "2026-05-01T10:10:00Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

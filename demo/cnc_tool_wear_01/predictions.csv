@@ -1,0 +1,5 @@
+prediction_id,model_id,model_version,predicted_at_utc,feature_window_start_utc,feature_window_end_utc,machine_id,cycle_id,target_name,score,decision_threshold,predicted_class,top_features_json,feature_schema_version
+PRED-cnc_tool_wear_01-0,cnc_tool_wear_risk_24h,1.0.0,2026-05-01T09:40:00Z,2026-05-01T09:40:00Z,2026-05-01T09:40:00Z,CNC-VMC-07,CYCLE-cnc_tool_wear_01,cnc_tool_wear_24h,0.18,0.65,normal,"{""tool_runtime_min"": 0.18}",features.v1
+PRED-cnc_tool_wear_01-1,cnc_tool_wear_risk_24h,1.0.0,2026-05-01T09:50:00Z,2026-05-01T09:50:00Z,2026-05-01T09:50:00Z,CNC-VMC-07,CYCLE-cnc_tool_wear_01,cnc_tool_wear_24h,0.27,0.65,normal,"{""tool_runtime_min"": 0.27}",features.v1
+PRED-cnc_tool_wear_01-2,cnc_tool_wear_risk_24h,1.0.0,2026-05-01T10:00:00Z,2026-05-01T10:00:00Z,2026-05-01T10:00:00Z,CNC-VMC-07,CYCLE-cnc_tool_wear_01,cnc_tool_wear_24h,0.39,0.65,normal,"{""tool_runtime_min"": 0.39}",features.v1
+PRED-cnc_tool_wear_01-3,cnc_tool_wear_risk_24h,1.0.0,2026-05-01T10:08:00Z,2026-05-01T10:08:00Z,2026-05-01T10:08:00Z,CNC-VMC-07,CYCLE-cnc_tool_wear_01,cnc_tool_wear_24h,0.89,0.65,alert,"{""tool_runtime_min"": 0.89}",features.v1

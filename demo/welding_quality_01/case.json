@@ -1,0 +1,22 @@
+{
+  "id": "INC-WELDING-QUALITY-DEGRADATION-20260501-001",
+  "asset_id": "WELD-CELL-05",
+  "asset_type": "robotic_gas_metal_arc_welding_cell",
+  "domain": "industrial_manufacturing",
+  "problem_code": "welding_quality_degradation",
+  "problem_label": "Welding-quality degradation",
+  "description": "Shielding-gas restriction destabilized the welding arc, increasing torch temperature and producing porosity in the weld inspection.",
+  "observed_at": "2026-05-01T10:06:00Z",
+  "baseline_end_at": "2026-05-01T10:04:00Z",
+  "incident_start_at": "2026-05-01T10:06:00Z",
+  "incident_end_at": "2026-05-01T10:10:00Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

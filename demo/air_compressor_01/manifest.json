@@ -1,0 +1,37 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "COMP-AIR-02",
+  "asset_type": "industrial_air_compressor",
+  "problem_code": "compressor_surge_overheating",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-COMPRESSOR-SURGE-OVERHEATING-20260501-001"
+  ],
+  "primary_signals": [
+    "airflow_m3_min",
+    "discharge_pressure_bar",
+    "discharge_temp_c"
+  ],
+  "context_signals": [
+    "motor_current_a",
+    "compressor_vibration_mm_s"
+  ],
+  "causal_chain": [
+    "Intake restriction",
+    "Airflow loss",
+    "Pressure + heat",
+    "Thermal trip",
+    "Plant downtime"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

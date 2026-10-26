@@ -40,6 +40,73 @@ SPINDLE_BEARING_SIGNALS = (
     "spindle_load_pct",
 )
 
+GENERIC_PROBLEM_CONFIG: dict[str, dict[str, Any]] = {
+    "cnc_tool_wear": {
+        "signals": ("tool_runtime_min", "spindle_load_pct", "cutting_force_n", "tool_vibration_rms_mm_s"),
+        "query": "tool wear cutting force vibration acoustic insert inspection maintenance",
+        "title": "CNC tool wear and edge failure",
+        "rationale": "Tool runtime, cutting force, and vibration increased together; maintenance confirmed edge degradation and the replacement restored the validation part.",
+        "check": "Inspect the tool edge, compare runtime against the approved tool-life limit, and verify the next validation part.",
+        "symptom": "Cutting force and vibration escalation caused the quality failure",
+    },
+    "robot_arm_joint_wear": {
+        "signals": ("joint_3_torque_nm", "joint_3_position_error_mm", "servo_current_a", "joint_3_temp_c"),
+        "query": "robot joint gearbox backlash lubrication torque position error servo maintenance",
+        "title": "Robot Joint 3 gearbox wear",
+        "rationale": "Joint torque, position error, and servo current increased during repeated assembly cycles; maintenance found gearbox lubrication loss and validated accuracy after service.",
+        "check": "Inspect Joint 3 lubrication and backlash, then run a calibrated positional-accuracy validation across repeated assembly cycles.",
+        "symptom": "Joint position error caused assembly misalignment",
+    },
+    "conveyor_motor_overheating": {
+        "signals": ("motor_current_a", "motor_temp_c", "motor_vibration_mm_s", "belt_speed_m_s"),
+        "query": "conveyor motor overheating bearing friction overload vibration maintenance",
+        "title": "Conveyor drive-motor overheating",
+        "rationale": "Drive current, motor temperature, and vibration rose while belt speed fell; maintenance found a seized drive bearing and validated normal operation after replacement.",
+        "check": "Inspect drive bearings and belt loading, measure motor temperature under a controlled load, and confirm stable speed.",
+        "symptom": "Motor thermal overload caused conveyor stoppage",
+    },
+    "conveyor_belt_misalignment": {
+        "signals": ("belt_offset_mm", "drive_current_a", "roller_vibration_mm_s", "belt_speed_m_s"),
+        "query": "conveyor belt tracking misalignment roller friction edge damage maintenance",
+        "title": "Conveyor belt tracking misalignment",
+        "rationale": "Belt offset and roller vibration increased while drive current rose; maintenance found a skewed tracking roller and validated alignment after correction.",
+        "check": "Check tracking rollers and belt tension, then run the conveyor at production load while measuring edge offset.",
+        "symptom": "Belt tracking error caused edge contact and line interruption",
+    },
+    "hydraulic_press_pressure_loss": {
+        "signals": ("hydraulic_pressure_bar", "ram_force_kn", "oil_temp_c", "pump_current_a"),
+        "query": "hydraulic press pressure loss seal leakage pump force forming defect maintenance",
+        "title": "Hydraulic-press pressure loss from seal leakage",
+        "rationale": "Hydraulic pressure and ram force declined while oil temperature and pump current rose; maintenance confirmed a leaking seal and validated forming force after repair.",
+        "check": "Inspect cylinder seals and hydraulic oil condition, then verify pressure and ram force through a controlled forming cycle.",
+        "symptom": "Insufficient forming force caused dimensional defects",
+    },
+    "welding_quality_degradation": {
+        "signals": ("weld_current_a", "arc_voltage_v", "shielding_gas_flow_l_min", "torch_temp_c"),
+        "query": "welding arc gas flow porosity weld quality torch maintenance",
+        "title": "Welding arc instability from shielding-gas restriction",
+        "rationale": "Shielding-gas flow fell while arc voltage and torch temperature became unstable; maintenance found a restricted regulator and validated weld quality after service.",
+        "check": "Inspect the gas regulator and torch path, verify flow at the nozzle, and complete a destructive or approved weld-quality validation.",
+        "symptom": "Arc instability caused porosity in the weld inspection",
+    },
+    "injection_molding_drift": {
+        "signals": ("melt_temp_c", "mold_temp_c", "injection_pressure_bar", "cycle_time_s"),
+        "query": "injection molding heater temperature pressure flash warping quality maintenance",
+        "title": "Injection-molding thermal-process drift",
+        "rationale": "Melt temperature and injection pressure drifted beyond the validated recipe window; maintenance found a heater-control fault and the validation parts passed after repair.",
+        "check": "Calibrate the temperature loop, inspect heater zones, and validate fill pressure and part dimensions across consecutive cycles.",
+        "symptom": "Thermal and pressure drift caused warped parts",
+    },
+    "compressor_surge_overheating": {
+        "signals": ("discharge_pressure_bar", "airflow_m3_min", "discharge_temp_c", "motor_current_a"),
+        "query": "air compressor surge overheating filter lubrication pressure airflow maintenance",
+        "title": "Air-compressor overheating from airflow restriction",
+        "rationale": "Airflow fell while discharge pressure, temperature, and motor current rose; maintenance found a blocked intake filter and validated stable compressor operation after replacement.",
+        "check": "Inspect the intake filter and lubrication circuit, then verify pressure, airflow, and discharge temperature under production demand.",
+        "symptom": "Reduced airflow caused compressor thermal trip",
+    },
+}
+
 
 def _parse_timestamp(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -152,12 +219,16 @@ def _timeline(
             }
         )
     for row in quality:
+        measurement = row.get("quality_measurement", row.get("surface_finish_ra_um", "—"))
+        limit = row.get("quality_limit", row.get("surface_finish_limit_um", "—"))
+        unit = row.get("quality_unit", "µm" if row.get("surface_finish_ra_um") else "")
+        label = row.get("quality_label", "Quality metric")
         entries.append(
             {
                 "timestamp": row.get("inspected_at_utc"),
                 "type": "quality",
                 "code": row.get("failure_code"),
-                "message": f"Surface finish Ra {row.get('surface_finish_ra_um')} µm; status {row.get('quality_status')}",
+                "message": f"{label} {measurement} {unit} (limit {limit}); status {row.get('quality_status')}",
                 "source": row.get("inspector_source"),
             }
         )
@@ -374,6 +445,63 @@ def rank_spindle_bearing_root_causes(
     return causes
 
 
+def rank_generic_root_causes(
+    case: IncidentCase,
+    anomalies: list[SensorAnomaly],
+    findings: list,
+    evidence_hits: list[EvidenceHit],
+    maintenance: list[dict[str, str]],
+) -> list[RootCauseHypothesis]:
+    """Rank the configured manufacturing problem using shared evidence contracts."""
+
+    config = GENERIC_PROBLEM_CONFIG[case.problem_code or ""]
+    mode = case.problem_code or "unknown"
+    hit_refs = _refs_for_hits(evidence_hits)
+    maintenance_refs = _maintenance_refs(maintenance, mode)
+    signal_refs = tuple(f"telemetry.csv#{signal}" for signal in config["signals"])
+    causes: list[RootCauseHypothesis] = []
+    confirmed = bool(maintenance_refs)
+    causes.append(
+        RootCauseHypothesis(
+            category=RootCauseCategory.PHYSICAL_ASSET,
+            score=0.95 if confirmed else 0.62,
+            title=config["title"] if confirmed else f"Possible {config['title'].lower()}",
+            rationale=config["rationale"] if confirmed else f"{config['rationale']} Independent maintenance confirmation is not available.",
+            recommended_check=config["check"],
+            evidence_refs=(*signal_refs, *maintenance_refs, *hit_refs),
+            status="confirmed" if confirmed else "suspected",
+            role="root_cause",
+        )
+    )
+    causes.append(
+        RootCauseHypothesis(
+            category=RootCauseCategory.PHYSICAL_ASSET,
+            score=0.86 if anomalies else 0.7,
+            title=config["symptom"],
+            rationale="The primary condition signals moved outside their baseline during the incident window and coincided with the failed production-quality check.",
+            recommended_check="Trend the primary condition signals together during a controlled validation cycle.",
+            evidence_refs=(*signal_refs[:3], *hit_refs),
+            status="confirmed" if anomalies else "suspected",
+            role="symptom",
+        )
+    )
+    for finding in findings:
+        causes.append(
+            RootCauseHypothesis(
+                category=finding.category,
+                score=0.92 if finding.severity is RiskLevel.HIGH else 0.7,
+                title=finding.title,
+                rationale=finding.description,
+                recommended_check=finding.disposition.replace("_", " ").capitalize(),
+                evidence_refs=tuple(finding.evidence),
+                status="needs_remediation",
+                role="model_risk",
+            )
+        )
+    causes.sort(key=lambda item: (-item.score, item.title))
+    return causes
+
+
 def analyze_cnc_case(case_dir: str | Path, top_k: int = 5) -> ReliabilityResult:
     root = Path(case_dir)
     case = load_case(root)
@@ -395,7 +523,14 @@ def analyze_cnc_case(case_dir: str | Path, top_k: int = 5) -> ReliabilityResult:
     maintenance = _load_optional_rows(root, case.maintenance_file)
     documents, chunks = load_case_documents(root, case)
 
-    case_signals = SPINDLE_BEARING_SIGNALS if case.problem_code == "spindle_bearing_degradation" else KEY_SIGNALS
+    generic_config = GENERIC_PROBLEM_CONFIG.get(case.problem_code or "")
+    case_signals = (
+        SPINDLE_BEARING_SIGNALS
+        if case.problem_code == "spindle_bearing_degradation"
+        else generic_config["signals"]
+        if generic_config
+        else KEY_SIGNALS
+    )
     anomalies = [
         anomaly
         for anomaly in detect_anomalies(telemetry, baseline_end_at=case.baseline_end_at)
@@ -405,12 +540,16 @@ def analyze_cnc_case(case_dir: str | Path, top_k: int = 5) -> ReliabilityResult:
     query = (
         "spindle bearing lubrication grease vibration temperature motor current inspection maintenance incident"
         if case.problem_code == "spindle_bearing_degradation"
+        else generic_config["query"]
+        if generic_config
         else "coolant filter pressure flow vibration chatter tool wear spindle maintenance incident"
     )
     evidence_hits = retrieve(query, chunks, top_k=top_k)
     root_causes = (
         rank_spindle_bearing_root_causes(anomalies, findings, evidence_hits, maintenance)
         if case.problem_code == "spindle_bearing_degradation"
+        else rank_generic_root_causes(case, anomalies, findings, evidence_hits, maintenance)
+        if generic_config
         else rank_cnc_root_causes(anomalies, findings, evidence_hits, maintenance)
     )
     timeline = _timeline(events, quality, maintenance)

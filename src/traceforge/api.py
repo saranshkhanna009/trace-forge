@@ -1,7 +1,7 @@
 """Read-only FastAPI service for the Vercel TraceForge dashboard.
 
-The Render deployment intentionally exposes the bundled, synthetic CNC case
-only. It does not accept uploads or write to the ephemeral filesystem.
+The Render deployment exposes the bundled synthetic manufacturing cases only.
+It does not accept uploads or write to the ephemeral filesystem.
 """
 
 from __future__ import annotations
@@ -149,20 +149,24 @@ def case_telemetry(
 ) -> dict[str, Any]:
     data = _dashboard_case(case_key, 5)
     available = set(data.telemetry_rows[0]) if data.telemetry_rows else set()
-    requested = tuple(signal.strip() for signal in signals.split(",") if signal.strip()) if signals else tuple(
-        signal for signal in (
-            "coolant_flow_l_min",
-            "coolant_pressure_bar",
-            "coolant_pump_current_a",
-            "spindle_bearing_temp_c",
-            "spindle_vibration_rms_mm_s",
-            "spindle_motor_current_a",
-            "spindle_load_pct",
-            "feed_rate_mm_min",
-            "tool_runtime_min",
+    configured_signals = tuple(
+        str(signal)
+        for signal in (
+            list(data.manifest.get("primary_signals", []))
+            + list(data.manifest.get("context_signals", []))
         )
-        if signal in available
     )
+    requested = (
+        tuple(signal.strip() for signal in signals.split(",") if signal.strip())
+        if signals
+        else tuple(signal for signal in configured_signals if signal in available)
+    )
+    if not requested and not signals:
+        requested = tuple(
+            signal
+            for signal in sorted(available)
+            if signal not in {"ts_utc", "machine_id", "machine_state", "cycle_id", "operation_id", "program_id", "part_id", "tool_id", "material_code", "active_alarm_code", "sample_quality"}
+        )
     unknown = sorted(set(requested) - available)
     if unknown:
         raise _error("unknown_signal", f"Unknown telemetry signal(s): {', '.join(unknown)}", 422)

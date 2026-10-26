@@ -1,0 +1,37 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "IM-PRESS-11",
+  "asset_type": "injection_molding_machine",
+  "problem_code": "injection_molding_drift",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-INJECTION-MOLDING-DRIFT-20260501-001"
+  ],
+  "primary_signals": [
+    "melt_temp_c",
+    "mold_temp_c",
+    "injection_pressure_bar"
+  ],
+  "context_signals": [
+    "cycle_time_s",
+    "part_weight_g"
+  ],
+  "causal_chain": [
+    "Heater drift",
+    "Melt-temperature shift",
+    "Pressure loss",
+    "Warped part",
+    "Quality rejection"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

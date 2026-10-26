@@ -1,0 +1,38 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "ROBOT-ASM-03",
+  "asset_type": "six_axis_assembly_robot",
+  "problem_code": "robot_arm_joint_wear",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-ROBOT-ARM-JOINT-WEAR-20260501-001"
+  ],
+  "primary_signals": [
+    "joint_3_torque_nm",
+    "joint_3_position_error_mm",
+    "servo_current_a"
+  ],
+  "context_signals": [
+    "joint_3_temp_c",
+    "cycle_time_s",
+    "grip_force_n"
+  ],
+  "causal_chain": [
+    "Lubrication loss",
+    "Joint friction",
+    "Position error",
+    "Misaligned assembly",
+    "Rework event"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

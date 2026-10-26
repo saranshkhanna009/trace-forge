@@ -1,0 +1,22 @@
+{
+  "id": "INC-HYDRAULIC-PRESS-PRESSURE-LOSS-20260501-001",
+  "asset_id": "PRESS-HP-04",
+  "asset_type": "hydraulic_stamping_press",
+  "domain": "industrial_manufacturing",
+  "problem_code": "hydraulic_press_pressure_loss",
+  "problem_label": "Hydraulic-press pressure loss",
+  "description": "A hydraulic-press cylinder seal leaked, causing pressure and ram-force loss, oil heating, and a failed formed-part inspection.",
+  "observed_at": "2026-05-01T10:06:00Z",
+  "baseline_end_at": "2026-05-01T10:04:00Z",
+  "incident_start_at": "2026-05-01T10:06:00Z",
+  "incident_end_at": "2026-05-01T10:10:00Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

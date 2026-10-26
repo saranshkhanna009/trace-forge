@@ -1,0 +1,7 @@
+ts_utc,machine_id,machine_state,cycle_id,operation_id,program_id,part_id,tool_id,active_alarm_code,tool_runtime_min,spindle_load_pct,cutting_force_n,tool_vibration_rms_mm_s,feed_rate_mm_min
+2026-05-01T10:00:00Z,CNC-VMC-07,running,CYCLE-cnc_tool_wear_01,OP40_FINISH,PRG-AL6061-042,P-88410,T19,,410,48,100,0.6,780
+2026-05-01T10:02:00Z,CNC-VMC-07,running,CYCLE-cnc_tool_wear_01,OP40_FINISH,PRG-AL6061-042,P-88410,T19,,412,49,102,0.62,780
+2026-05-01T10:04:00Z,CNC-VMC-07,running,CYCLE-cnc_tool_wear_01,OP40_FINISH,PRG-AL6061-042,P-88410,T19,,414,50,104,0.65,780
+2026-05-01T10:06:00Z,CNC-VMC-07,running,CYCLE-cnc_tool_wear_01,OP40_FINISH,PRG-AL6061-042,P-88410,T19,,430,59,124,0.9,780
+2026-05-01T10:08:00Z,CNC-VMC-07,alarm,CYCLE-cnc_tool_wear_01,OP40_FINISH,PRG-AL6061-042,P-88410,T19,PROCESS_LIMIT_HIGH,448,71,158,1.45,780
+2026-05-01T10:10:00Z,CNC-VMC-07,stopped,CYCLE-cnc_tool_wear_01,OP40_FINISH,PRG-AL6061-042,P-88410,T19,PROCESS_LIMIT_HIGH,465,82,190,2.2,780

@@ -1,0 +1,7 @@
+ts_utc,machine_id,machine_state,cycle_id,operation_id,program_id,part_id,tool_id,active_alarm_code,melt_temp_c,mold_temp_c,injection_pressure_bar,cycle_time_s,part_weight_g
+2026-05-01T10:00:00Z,IM-PRESS-11,running,CYCLE-injection_molding_01,MOLD_FILL,RECIPE-PP-22,CAP-551,MOLD-11,,220,60,95,12.0,18.2
+2026-05-01T10:02:00Z,IM-PRESS-11,running,CYCLE-injection_molding_01,MOLD_FILL,RECIPE-PP-22,CAP-551,MOLD-11,,220,60,95,12.0,18.2
+2026-05-01T10:04:00Z,IM-PRESS-11,running,CYCLE-injection_molding_01,MOLD_FILL,RECIPE-PP-22,CAP-551,MOLD-11,,221,60,96,12.0,18.2
+2026-05-01T10:06:00Z,IM-PRESS-11,running,CYCLE-injection_molding_01,MOLD_FILL,RECIPE-PP-22,CAP-551,MOLD-11,,228,62,91,12.4,18.0
+2026-05-01T10:08:00Z,IM-PRESS-11,alarm,CYCLE-injection_molding_01,MOLD_FILL,RECIPE-PP-22,CAP-551,MOLD-11,PROCESS_LIMIT_HIGH,250,72,83,13.0,17.6
+2026-05-01T10:10:00Z,IM-PRESS-11,stopped,CYCLE-injection_molding_01,MOLD_FILL,RECIPE-PP-22,CAP-551,MOLD-11,PROCESS_LIMIT_HIGH,270,78,75,14.0,17.1

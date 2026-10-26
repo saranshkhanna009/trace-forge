@@ -8,10 +8,9 @@ React/Vite frontend  ───────▶  FastAPI analysis API
 https://<frontend>.vercel.app  https://<api>.onrender.com
 ```
 
-The first deployment is intentionally read-only over the synthetic CNC cases
-bundled in `demo/cnc_vmc_07` and `demo/cnc_spindle_bearing_01`. Render's free
-filesystem is ephemeral, so the service does not accept uploads or persist
-user-created cases.
+The first deployment is intentionally read-only over the ten synthetic
+manufacturing cases bundled under `demo/`. Render's free filesystem is
+ephemeral, so the service does not accept uploads or persist user-created cases.
 
 ## 1. Deploy the API to Render
 
@@ -47,7 +46,7 @@ user-created cases.
    ```
 
 The Render service must use the repository root as its root directory. The
-root must contain `pyproject.toml` and both bundled case directories; otherwise
+root must contain `pyproject.toml` and the complete `demo/` directory; otherwise
 the API can start successfully while publishing an incomplete case list.
 
 ### Render configuration supplied by the repository
@@ -132,8 +131,9 @@ GET /api/v1/cases/{case_key}/graph
 ```
 
 Case keys are allowlisted directory names, not arbitrary filesystem paths.
-The default case key is `cnc_vmc_07`; the spindle-bearing case key is
-`cnc_spindle_bearing_01`.
+The default case key is `cnc_vmc_07`. The dashboard also publishes the
+spindle-bearing, tool-wear, robot-joint, conveyor, hydraulic-press, welding,
+injection-molding, and compressor investigations.
 
 ## Free-tier behavior
 

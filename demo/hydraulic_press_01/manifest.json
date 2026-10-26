@@ -1,0 +1,37 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "PRESS-HP-04",
+  "asset_type": "hydraulic_stamping_press",
+  "problem_code": "hydraulic_press_pressure_loss",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-HYDRAULIC-PRESS-PRESSURE-LOSS-20260501-001"
+  ],
+  "primary_signals": [
+    "hydraulic_pressure_bar",
+    "ram_force_kn",
+    "oil_temp_c"
+  ],
+  "context_signals": [
+    "pump_current_a",
+    "cycle_time_s"
+  ],
+  "causal_chain": [
+    "Seal leakage",
+    "Pressure loss",
+    "Ram-force decline",
+    "Forming deviation",
+    "Rejected part"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

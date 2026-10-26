@@ -21,6 +21,16 @@ from traceforge.telemetry import detect_anomalies, load_telemetry
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CASE_DIR = PROJECT_ROOT / "demo" / "cnc_vmc_07"
 SPINDLE_CASE_DIR = PROJECT_ROOT / "demo" / "cnc_spindle_bearing_01"
+MANUFACTURING_CASES = (
+    "cnc_tool_wear_01",
+    "robot_arm_joint_01",
+    "conveyor_motor_01",
+    "conveyor_belt_alignment_01",
+    "hydraulic_press_01",
+    "welding_quality_01",
+    "injection_molding_01",
+    "air_compressor_01",
+)
 
 
 class TraceForgeTests(unittest.TestCase):
@@ -76,6 +86,16 @@ class TraceForgeTests(unittest.TestCase):
         self.assertEqual(root.status, "confirmed")
         self.assertIn("bearing", root.title.lower())
         self.assertTrue(any(item.status == "ruled_out" for item in result.root_causes))
+
+    def test_remaining_manufacturing_cases_have_confirmed_root_causes(self) -> None:
+        for case_key in MANUFACTURING_CASES:
+            with self.subTest(case_key=case_key):
+                result = analyze_cnc_case(PROJECT_ROOT / "demo" / case_key)
+                root = next(item for item in result.root_causes if item.role == "root_cause")
+                self.assertEqual(result.status, "CRITICAL")
+                self.assertEqual(root.status, "confirmed")
+                self.assertGreaterEqual(len(result.anomalies), 2)
+                self.assertEqual(len(result.quality_records), 2)
 
     def test_report_contract_and_outputs_are_reproducible(self) -> None:
         first = analyze_cnc_case(CASE_DIR)

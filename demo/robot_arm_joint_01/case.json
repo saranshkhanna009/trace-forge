@@ -1,0 +1,22 @@
+{
+  "id": "INC-ROBOT-ARM-JOINT-WEAR-20260501-001",
+  "asset_id": "ROBOT-ASM-03",
+  "asset_type": "six_axis_assembly_robot",
+  "domain": "industrial_manufacturing",
+  "problem_code": "robot_arm_joint_wear",
+  "problem_label": "Robotic-arm joint wear",
+  "description": "Robot Joint 3 developed gearbox wear, followed by rising torque, position error, servo current, and failed assembly alignment.",
+  "observed_at": "2026-05-01T10:06:00Z",
+  "baseline_end_at": "2026-05-01T10:04:00Z",
+  "incident_start_at": "2026-05-01T10:06:00Z",
+  "incident_end_at": "2026-05-01T10:10:00Z",
+  "telemetry_file": "telemetry.csv",
+  "model_report_file": "model_manifest.json",
+  "model_manifest_file": "model_manifest.json",
+  "events_file": "events.csv",
+  "production_quality_file": "production_quality.csv",
+  "maintenance_file": "maintenance.csv",
+  "predictions_file": "predictions.csv",
+  "labels_file": "labels.csv",
+  "documents_dir": "documents"
+}

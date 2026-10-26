@@ -1,0 +1,37 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "WELD-CELL-05",
+  "asset_type": "robotic_gas_metal_arc_welding_cell",
+  "problem_code": "welding_quality_degradation",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-WELDING-QUALITY-DEGRADATION-20260501-001"
+  ],
+  "primary_signals": [
+    "shielding_gas_flow_l_min",
+    "arc_voltage_v",
+    "torch_temp_c"
+  ],
+  "context_signals": [
+    "weld_current_a",
+    "wire_feed_m_min"
+  ],
+  "causal_chain": [
+    "Regulator restriction",
+    "Gas-flow loss",
+    "Arc instability",
+    "Porosity",
+    "Weld rejection"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

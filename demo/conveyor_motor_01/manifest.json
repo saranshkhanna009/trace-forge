@@ -1,0 +1,37 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "CONVEYOR-L3-02",
+  "asset_type": "production_conveyor_drive",
+  "problem_code": "conveyor_motor_overheating",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-CONVEYOR-MOTOR-OVERHEATING-20260501-001"
+  ],
+  "primary_signals": [
+    "motor_current_a",
+    "motor_temp_c",
+    "motor_vibration_mm_s"
+  ],
+  "context_signals": [
+    "belt_speed_m_s",
+    "load_kg"
+  ],
+  "causal_chain": [
+    "Bearing friction",
+    "Motor current",
+    "Thermal escalation",
+    "Speed loss",
+    "Line stoppage"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

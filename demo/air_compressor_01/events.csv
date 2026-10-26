@@ -1,0 +1,4 @@
+ts_start_utc,ts_end_utc,event_type,event_code,message,source
+2026-05-01T10:06:00Z,2026-05-01T10:06:00Z,alarm,PROCESS_LIMIT_HIGH,Industrial-compressor surge / overheating exceeded the operating envelope,controller
+2026-05-01T10:08:00Z,2026-05-01T10:08:00Z,alarm,QUALITY_RISK,Production quality risk detected during the active cycle,controller
+2026-05-01T10:10:00Z,2026-05-01T10:10:00Z,alarm,PROTECTIVE_STOP,Machine stopped for investigation,controller

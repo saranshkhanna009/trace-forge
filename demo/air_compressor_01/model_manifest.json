@@ -1,0 +1,38 @@
+{
+  "model_id": "compressor_surge_overheating_risk_24h",
+  "model_version": "1.0.0",
+  "task": "binary_classification",
+  "target_name": "compressor_surge_overheating_24h",
+  "score_semantics": "probability",
+  "decision_threshold": 0.65,
+  "prediction_interval_minutes": 10,
+  "prediction_horizon_hours": 24,
+  "required_physical_signals": [
+    "airflow_m3_min",
+    "discharge_pressure_bar",
+    "discharge_temp_c"
+  ],
+  "physical_signal_label": "Industrial-compressor surge / overheating",
+  "declared_features": [
+    "airflow_m3_min",
+    "discharge_pressure_bar",
+    "active_alarm_code"
+  ],
+  "feature_availability_rule": "All feature values must be available at or before predicted_at_utc",
+  "known_exclusions": [
+    "maintenance_action",
+    "quality_result",
+    "post_event_alarm"
+  ],
+  "train_test_overlap": true,
+  "calibration_error": 0.15,
+  "feature_drift": {
+    "airflow_m3_min": 0.27,
+    "discharge_pressure_bar": 0.24,
+    "discharge_temp_c": 0.3
+  },
+  "reproducibility": {
+    "seed": 50,
+    "data_version": null
+  }
+}

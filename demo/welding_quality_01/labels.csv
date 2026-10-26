@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+LABEL-welding_quality_01,WELD-CELL-05,INC-WELDING-QUALITY-DEGRADATION-20260501-001,2026-05-01T11:00:00Z,welding_quality_degradation_24h,1,maintenance_validation

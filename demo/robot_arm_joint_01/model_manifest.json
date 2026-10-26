@@ -1,0 +1,38 @@
+{
+  "model_id": "robot_arm_joint_wear_risk_24h",
+  "model_version": "1.0.0",
+  "task": "binary_classification",
+  "target_name": "robot_arm_joint_wear_24h",
+  "score_semantics": "probability",
+  "decision_threshold": 0.65,
+  "prediction_interval_minutes": 10,
+  "prediction_horizon_hours": 24,
+  "required_physical_signals": [
+    "joint_3_torque_nm",
+    "joint_3_position_error_mm",
+    "servo_current_a"
+  ],
+  "physical_signal_label": "Robotic-arm joint wear",
+  "declared_features": [
+    "joint_3_torque_nm",
+    "joint_3_position_error_mm",
+    "active_alarm_code"
+  ],
+  "feature_availability_rule": "All feature values must be available at or before predicted_at_utc",
+  "known_exclusions": [
+    "maintenance_action",
+    "quality_result",
+    "post_event_alarm"
+  ],
+  "train_test_overlap": true,
+  "calibration_error": 0.15,
+  "feature_drift": {
+    "joint_3_torque_nm": 0.24,
+    "joint_3_position_error_mm": 0.27,
+    "servo_current_a": 0.3
+  },
+  "reproducibility": {
+    "seed": 44,
+    "data_version": null
+  }
+}

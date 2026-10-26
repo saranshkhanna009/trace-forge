@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+LABEL-hydraulic_press_01,PRESS-HP-04,INC-HYDRAULIC-PRESS-PRESSURE-LOSS-20260501-001,2026-05-01T11:00:00Z,hydraulic_press_pressure_loss_24h,1,maintenance_validation

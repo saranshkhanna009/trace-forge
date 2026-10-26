@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+LABEL-injection_molding_01,IM-PRESS-11,INC-INJECTION-MOLDING-DRIFT-20260501-001,2026-05-01T11:00:00Z,injection_molding_drift_24h,1,maintenance_validation

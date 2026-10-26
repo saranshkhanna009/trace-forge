@@ -1,0 +1,37 @@
+{
+  "schema_version": "traceforge.manufacturing.v1",
+  "machine_id": "CNC-VMC-07",
+  "asset_type": "cnc_vertical_machining_center",
+  "problem_code": "cnc_tool_wear",
+  "timezone": "UTC",
+  "telemetry_cadence_seconds": 120,
+  "incident_ids": [
+    "INC-CNC-TOOL-WEAR-20260501-001"
+  ],
+  "primary_signals": [
+    "tool_runtime_min",
+    "cutting_force_n",
+    "tool_vibration_rms_mm_s"
+  ],
+  "context_signals": [
+    "spindle_load_pct",
+    "feed_rate_mm_min"
+  ],
+  "causal_chain": [
+    "Runtime limit",
+    "Cutting force",
+    "Vibration + chatter",
+    "Tool edge failure",
+    "Rejected part"
+  ],
+  "files": [
+    "telemetry.csv",
+    "events.csv",
+    "production_quality.csv",
+    "maintenance.csv",
+    "predictions.csv",
+    "labels.csv",
+    "model_manifest.json",
+    "documents/maintenance-evidence.md"
+  ]
+}

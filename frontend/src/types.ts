@@ -57,6 +57,11 @@ export interface PredictionRow {
 export interface QualityRecord {
   quality_id?: string;
   inspected_at_utc?: string;
+  quality_measurement?: string;
+  quality_limit?: string;
+  quality_unit?: string;
+  quality_label?: string;
+  quality_value?: string;
   surface_finish_ra_um?: string;
   surface_finish_limit_um?: string;
   quality_status?: string;

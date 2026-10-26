@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+LABEL-conveyor_belt_alignment_01,CONVEYOR-L2-01,INC-CONVEYOR-BELT-MISALIGNMENT-20260501-001,2026-05-01T11:00:00Z,conveyor_belt_misalignment_24h,1,maintenance_validation

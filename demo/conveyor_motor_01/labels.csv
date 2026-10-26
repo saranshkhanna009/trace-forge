@@ -1,0 +1,2 @@
+label_id,machine_id,incident_id,labeled_at_utc,target_name,target_value,label_source
+LABEL-conveyor_motor_01,CONVEYOR-L3-02,INC-CONVEYOR-MOTOR-OVERHEATING-20260501-001,2026-05-01T11:00:00Z,conveyor_motor_overheating_24h,1,maintenance_validation
